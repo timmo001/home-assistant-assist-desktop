@@ -1,0 +1,294 @@
+<script lang="ts">
+  import { invoke } from "@tauri-apps/api/tauri";
+  import { onDestroy, onMount } from "svelte";
+  import {
+    type Connection,
+    type HassConfig,
+    type HassUser,
+  } from "home-assistant-js-websocket";
+
+  import {
+    type AssistResponse,
+    AssistResponseType,
+  } from "./types/assistResponse";
+  import { type HomeAssistantConfig } from "./types/settings";
+  import {
+    type AssistPipeline,
+    type PipelineRunEvent,
+  } from "./types/homeAssistantAssist";
+  import { HomeAssistant } from "./homeAssistant";
+
+  let responses: AssistResponse[] = [];
+  let text: string;
+  let inputElement: HTMLInputElement;
+  let outputElement: HTMLDivElement;
+  let homeAssistantClient: HomeAssistant;
+  let homeAssistantPipelines: {
+    pipelines: AssistPipeline[];
+    preferred_pipeline: string | null;
+  };
+  let homeAssistantConversationId: string | null;
+
+  function homeAssistantConnected(
+    connection: Connection,
+    user: HassUser
+  ): void {
+    console.log("Connected to Home Assistant:", { connection, user });
+
+    homeAssistantClient
+      .listAssistPipelines()
+      ?.then(
+        (pipelines: {
+          pipelines: AssistPipeline[];
+          preferred_pipeline: string | null;
+        }) => {
+          console.log("Got pipelines", pipelines);
+          homeAssistantPipelines = pipelines;
+        }
+      );
+  }
+
+  function gotHomeAssistantConfig(config: HassConfig): void {
+    console.log("Got Home Assistant config:", config);
+  }
+
+  async function setupHomeAssistantConnection(): Promise<void> {
+    homeAssistantClient = new HomeAssistant(
+      homeAssistantConnected,
+      gotHomeAssistantConfig,
+      homeAssistantConfig
+    );
+    await homeAssistantClient.connect();
+  }
+
+  function handleKeydown(event: KeyboardEvent): void {
+    switch (event.key) {
+      case "ArrowUp":
+        if (responses.length === 0) return;
+        if (!inputElement.selectionStart || inputElement.selectionStart > 0)
+          return;
+
+        const userResponsesUp = responses.filter(
+          (response) => response.type === AssistResponseType.User
+        );
+        if (userResponsesUp.length > 0) {
+          const nextTextId = userResponsesUp.findIndex(
+            (response) => response.text === text
+          );
+          text =
+            userResponsesUp[
+              nextTextId > 0 ? nextTextId - 1 : userResponsesUp.length - 1
+            ].text;
+        }
+        break;
+      case "ArrowDown":
+        if (responses.length === 0) return;
+        if (
+          !inputElement.selectionStart ||
+          inputElement.selectionStart < text.length
+        )
+          return;
+
+        const userResponsesDown = responses.filter(
+          (response) => response.type === AssistResponseType.User
+        );
+        if (userResponsesDown.length > 0) {
+          const nextTextId = userResponsesDown.findIndex(
+            (response) => response.text === text
+          );
+          text =
+            userResponsesDown[
+              nextTextId < userResponsesDown.length - 1 ? nextTextId + 1 : 0
+            ].text;
+        }
+        break;
+      case "Enter":
+        callPipeline();
+        break;
+      case "Escape":
+        text = "";
+        // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
+        invoke("toggle_window").then(() => console.log("Toggled window"));
+        break;
+    }
+  }
+
+  onMount(() => {
+    setupHomeAssistantConnection();
+    inputElement.focus();
+    window.addEventListener("keydown", handleKeydown);
+  });
+
+  onDestroy(() => {
+    window.removeEventListener("keydown", handleKeydown);
+  });
+
+  async function callPipeline(): Promise<void> {
+    // CallPipeline([...responses, { type: ResponseType.User, text }]).then(
+    // (result: Response[]) => {
+
+    // Disable input
+    inputElement.disabled = true;
+
+    // Set responses
+    responses = [...responses, { type: AssistResponseType.User, text }];
+
+    // Send to pipeline
+    const unsub = await homeAssistantClient.runAssistPipeline(
+      (event: PipelineRunEvent) => {
+        console.log("Got pipeline event:", event);
+        if (event.type === "intent-end") {
+          homeAssistantConversationId =
+            event.data.intent_output.conversation_id;
+          const plain = event.data.intent_output.response.speech?.plain;
+          if (plain) {
+            // message.text = plain.speech;
+            responses = [
+              ...responses,
+              { type: AssistResponseType.Assist, text: plain.speech },
+            ];
+          }
+          if (unsub) unsub();
+        }
+        if (event.type === "error") {
+          // message.text = event.data.message;
+          // message.error = true;
+          if (unsub) unsub();
+        }
+      },
+      {
+        start_stage: "intent",
+        input: { text },
+        end_stage: "intent",
+        pipeline: homeAssistantPipelines.preferred_pipeline || undefined,
+        conversation_id: homeAssistantConversationId,
+      }
+    );
+
+    // Scroll to bottom
+    outputElement.scroll({
+      top: outputElement.scrollHeight + 1000,
+      behavior: "smooth",
+    });
+    // Clear input
+    text = "";
+    inputElement.disabled = false;
+    inputElement.focus();
+    // }
+    // );
+  }
+</script>
+
+<main>
+  <div class="input-box" id="input">
+    <svg
+      preserveAspectRatio="xMidYMid meet"
+      focusable="false"
+      role="img"
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+    >
+      <g>
+        <path
+          d="M9,22A1,1 0 0,1 8,21V18H4A2,2 0 0,1 2,16V4C2,2.89 2.9,2 4,2H20A2,2 0 0,1 22,4V16A2,2 0 0,1 20,18H13.9L10.2,21.71C10,21.9 9.75,22 9.5,22V22H9M10,16V19.08L13.08,16H20V4H4V16H10M17,11H15V9H17V11M13,11H11V9H13V11M9,11H7V9H9V11Z"
+        >
+        </path>
+      </g>
+    </svg>
+    <input
+      bind:this={inputElement}
+      autocomplete="off"
+      bind:value={text}
+      class="input"
+      id="text"
+      type="text"
+      placeholder="Enter a request.."
+    />
+  </div>
+  <div bind:this={outputElement} class="output-box" id="output">
+    {#each responses as response}
+      <div
+        class={`bubble ${
+          response.type === AssistResponseType.Assist
+            ? "bubble-assist"
+            : "bubble-user"
+        }`}
+      >
+        {response.text}
+      </div>
+    {/each}
+  </div>
+</main>
+
+<style>
+  main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: start;
+    height: 100vh;
+  }
+
+  .input-box {
+    display: flex;
+    align-items: start;
+    justify-content: center;
+    width: calc(100% - 2.8rem);
+    margin: 0.8rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: 0.8rem;
+    border: none;
+    background-color: rgba(28, 28, 28, 0.8);
+    box-shadow: 0 0 0.2rem rgba(0, 0, 0, 0.1);
+  }
+
+  .input-box svg {
+    width: 1.8rem;
+    height: 1.8rem;
+    margin: 0.6rem 0.2rem 0.6rem 0.4rem;
+    fill: rgba(248, 248, 248, 0.6);
+  }
+
+  .input-box input {
+    outline: none;
+    border: none;
+    background-color: transparent;
+    width: 100%;
+    font-size: 1.4rem;
+  }
+
+  .output-box {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    justify-content: start;
+    width: 100%;
+    overflow-y: auto;
+  }
+
+  .bubble {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0.4rem 0.6rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: 0.8rem;
+    font-size: 1.4rem;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  .bubble-assist {
+    align-self: flex-start;
+    box-shadow: 0 0 0.2rem rgba(0, 0, 0, 0.1);
+    background-color: rgba(1, 169, 244, 0.8);
+    color: rgba(248, 248, 248, 0.8);
+  }
+
+  .bubble-user {
+    align-self: flex-end;
+    box-shadow: 0 0 0.2rem rgba(0, 0, 0, 0.1);
+    background-color: rgba(179, 229, 252, 0.8);
+    color: rgba(28, 28, 28, 0.8);
+  }
+</style>
