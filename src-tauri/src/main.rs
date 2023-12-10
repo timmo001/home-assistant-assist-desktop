@@ -1,12 +1,111 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use serde::{Deserialize, Serialize};
+use std::fs::File;
 use tauri::GlobalShortcutManager;
 use tauri::Manager;
 use tauri::SystemTray;
 use tauri::{CustomMenuItem, SystemTrayMenu, SystemTrayMenuItem};
 
+// Define settings
+#[derive(Serialize, Deserialize)]
+struct HomeAssistantSettings {
+    access_token: String,
+    host: String,
+    port: u16,
+    ssl: bool,
+}
+
+#[derive(Serialize, Deserialize)]
+struct Settings {
+    home_assistant: HomeAssistantSettings,
+}
+
+#[derive(Debug, Serialize)]
+struct CommandError {
+    message: String,
+}
+
+impl From<serde_json::Error> for CommandError {
+    fn from(error: serde_json::Error) -> Self {
+        CommandError {
+            message: error.to_string(),
+        }
+    }
+}
+
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
+#[tauri::command]
+fn load_settings() -> Result<Settings, CommandError> {
+    let settings_path: String = dirs::data_local_dir()
+        .expect("Failed to get local data directory")
+        .join("timmo001")
+        .join("home-assistant-assist")
+        .join("settings.json")
+        .to_str()
+        .unwrap()
+        .to_string();
+
+    println!("Loading settings from {}...", settings_path);
+
+    // If the directory doesn't exist, create it.
+    if !std::path::Path::new(&settings_path)
+        .parent()
+        .unwrap()
+        .exists()
+    {
+        std::fs::create_dir_all(std::path::Path::new(&settings_path).parent().unwrap()).unwrap();
+    }
+
+    // Convert the settings path to a Path.
+    let path: &std::path::Path = std::path::Path::new(&settings_path);
+
+    // Check if the file exists.
+    if !path.exists() {
+        // Create the file if it doesn't exist.
+        let file: File = File::create(path).unwrap();
+        // Create a new Settings struct.
+        let settings: Settings = Settings {
+            home_assistant: HomeAssistantSettings {
+                access_token: "".to_string(),
+                host: "homeassistant.local".to_string(),
+                port: 8123,
+                ssl: false,
+            },
+        };
+        // Serialize the Settings struct into JSON.
+        serde_json::to_writer_pretty(file, &settings).unwrap();
+    }
+    // Open the file in read-only mode.
+    let file: File = File::open(path).unwrap();
+    // Read the JSON contents of the file as an instance of `Settings`.
+    let settings: Settings = serde_json::from_reader(file)?;
+
+    Ok(settings)
+}
+
+#[tauri::command]
+fn update_settings(settings: Settings) -> Result<(), CommandError> {
+    let settings_path: String = dirs::data_local_dir()
+        .expect("Failed to get local data directory")
+        .join("timmo001")
+        .join("home-assistant-assist")
+        .join("settings.json")
+        .to_str()
+        .unwrap()
+        .to_string();
+
+    println!("Updating settings at {}...", settings_path);
+
+    // Open the file in write-only mode.
+    let file: File = File::create(settings_path).unwrap();
+    // Serialize the Settings struct into JSON.
+    serde_json::to_writer_pretty(file, &settings).unwrap();
+
+    Ok(())
+}
+
 #[tauri::command]
 fn toggle_window(window: tauri::Window) {
     if window
@@ -60,7 +159,12 @@ fn main() {
                 _ => {}
             },
         )
-        .invoke_handler(tauri::generate_handler![toggle_window, quit_application])
+        .invoke_handler(tauri::generate_handler![
+            load_settings,
+            update_settings,
+            toggle_window,
+            quit_application
+        ])
         .setup(|app: &mut tauri::App| {
             let window = app.get_window("main").unwrap();
 

@@ -11,13 +11,21 @@
     type AssistResponse,
     AssistResponseType,
   } from "./types/assistResponse";
-  import { type HomeAssistantConfig } from "./types/settings";
+  import { type Settings } from "./types/settings";
   import {
     type AssistPipeline,
     type PipelineRunEvent,
   } from "./types/homeAssistantAssist";
   import { HomeAssistant } from "./homeAssistant";
 
+  let settings: Settings = {
+    home_assistant: {
+      access_token: "",
+      host: "homeassistant.local",
+      port: 8123,
+      ssl: false,
+    },
+  };
   let responses: AssistResponse[] = [];
   let text: string;
   let inputElement: HTMLInputElement;
@@ -48,15 +56,15 @@
       );
   }
 
-  function gotHomeAssistantConfig(config: HassConfig): void {
+  function homeAssistantConfigReceived(config: HassConfig): void {
     console.log("Got Home Assistant config:", config);
   }
 
   async function setupHomeAssistantConnection(): Promise<void> {
     homeAssistantClient = new HomeAssistant(
       homeAssistantConnected,
-      gotHomeAssistantConfig,
-      homeAssistantConfig
+      homeAssistantConfigReceived,
+      settings.home_assistant
     );
     await homeAssistantClient.connect();
   }
@@ -114,9 +122,14 @@
   }
 
   onMount(() => {
-    setupHomeAssistantConnection();
-    inputElement.focus();
-    window.addEventListener("keydown", handleKeydown);
+    invoke("load_settings").then((result: unknown) => {
+      settings = result as Settings;
+      console.log("Loaded settings:", settings);
+      setupHomeAssistantConnection().then(() => {
+        inputElement.focus();
+        window.addEventListener("keydown", handleKeydown);
+      });
+    });
   });
 
   onDestroy(() => {

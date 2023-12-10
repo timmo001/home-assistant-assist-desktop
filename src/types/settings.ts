@@ -1,8 +1,10 @@
-export interface Settings {
-  homeAssistant: HomeAssistantConfig;
+export interface HomeAssistantSettings {
+  access_token?: string;
+  host: string;
+  port: number;
+  ssl: boolean;
 }
 
-export interface HomeAssistantConfig {
-  accessToken?: string;
-  url?: string;
+export interface Settings {
+  home_assistant: HomeAssistantSettings;
 }

@@ -11,7 +11,7 @@ import {
   subscribeConfig,
 } from "home-assistant-js-websocket";
 
-import { type HomeAssistantConfig } from "./types/settings";
+import { type HomeAssistantSettings } from "./types/settings";
 import {
   type PipelineRun,
   type PipelineRunEvent,
@@ -22,27 +22,23 @@ import {
 
 export class HomeAssistant {
   private auth: Auth | null = null;
-  private config: HomeAssistantConfig | null = null;
+  private config: HomeAssistantSettings | null = null;
   private connection: Connection | null = null;
   private connectedCallback: (connection: Connection, user: HassUser) => void;
   private configCallback: (config: HassConfig) => void;
 
   constructor(
     connectedCallback: (connection: Connection, user: HassUser) => void,
-    configCallback: (config: HassConfig) => void,
-    config?: HomeAssistantConfig,
+    configReceivedCallback: (config: HassConfig) => void,
+    config?: HomeAssistantSettings,
     connection?: Connection
   ) {
     console.log("Home Assistant: create new client");
 
     this.connectedCallback = connectedCallback;
-    this.configCallback = configCallback;
+    this.configCallback = configReceivedCallback;
     this.config = config || null;
     this.connection = connection || null;
-  }
-
-  public baseUrl(): string | null {
-    return this.config?.url || null;
   }
 
   public get connected(): boolean {
@@ -73,16 +69,19 @@ export class HomeAssistant {
 
   async connect(): Promise<void> {
     if (this.connection) return;
-    if (!this.config?.url) throw new Error("Missing Home Assistant URL");
-    if (!this.config?.accessToken)
+    if (!this.config?.host) throw new Error("Missing Home Assistant host");
+    if (!this.config?.access_token)
       throw new Error("Missing Home Assistant access token");
+
+    const url = `${this.config.ssl ? "https" : "http"}://${this.config.host}:${
+      this.config.port
+    }`;
+
+    console.log("Home Assistant: ", url);
 
     // Create auth object
     console.log("Home Assistant: createLongLivedTokenAuth");
-    this.auth = createLongLivedTokenAuth(
-      this.config.url,
-      this.config.accessToken
-    );
+    this.auth = createLongLivedTokenAuth(url, this.config.access_token);
 
     // Connect to Home Assistant
     console.log("Home Assistant: createConnection");
