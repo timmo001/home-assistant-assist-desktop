@@ -13,6 +13,14 @@ body {
   overflow: hidden;
 }
 
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: start;
+  height: 100vh;
+}
+
 input {
   background-color: rgba(0, 0, 0, 0.8);
   color: rgba(248, 248, 248, 1);
@@ -20,6 +28,34 @@ input {
   border-radius: 5px;
   padding: 5px;
   margin: 5px;
+}
+
+.input-box {
+  display: flex;
+  align-items: start;
+  justify-content: center;
+  width: calc(100% - 2.8rem);
+  margin: 0.8rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.8rem;
+  border: none;
+  background-color: rgba(28, 28, 28, 0.8);
+  box-shadow: 0 0 0.2rem rgba(0, 0, 0, 0.1);
+}
+
+.input-box svg {
+  width: 1.8rem;
+  height: 1.8rem;
+  margin: 0.6rem 0.2rem 0.6rem 0.4rem;
+  fill: rgba(248, 248, 248, 0.6);
+}
+
+.input-box input {
+  outline: none;
+  border: none;
+  background-color: transparent;
+  width: 100%;
+  font-size: 1.4rem;
 }
 
 #app {

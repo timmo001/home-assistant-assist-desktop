@@ -37,6 +37,22 @@ impl From<serde_json::Error> for CommandError {
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
+fn open_app(window: tauri::Window) {
+    println!("Opening app...");
+
+    window.show().expect("failed to show the window");
+    window.set_focus().expect("failed to focus the window");
+}
+
+#[tauri::command]
+fn open_settings(window: tauri::Window) {
+    println!("Opening settings...");
+
+    window.show().expect("failed to show the window");
+    window.set_focus().expect("failed to focus the window");
+}
+
+#[tauri::command]
 fn load_settings() -> Result<Settings, CommandError> {
     let settings_path: String = dirs::data_local_dir()
         .expect("Failed to get local data directory")
@@ -114,6 +130,11 @@ fn toggle_window(window: tauri::Window) {
     {
         window.hide().expect("failed to hide the window");
     } else {
+        let url = window.url().to_string();
+        if url.contains("settings") {
+            open_app(window);
+            return;
+        }
         window.show().expect("failed to show the window");
     }
 }
@@ -127,9 +148,12 @@ fn quit_application(window: tauri::Window) {
 fn main() {
     let toggle: CustomMenuItem =
         CustomMenuItem::new("toggle_window".to_string(), "Show/Hide Window");
+    let settings: CustomMenuItem = CustomMenuItem::new("open_settings".to_string(), "Settings");
     let quit: CustomMenuItem = CustomMenuItem::new("quit_application".to_string(), "Quit");
     let tray_menu: SystemTrayMenu = SystemTrayMenu::new()
         .add_item(toggle)
+        .add_native_item(SystemTrayMenuItem::Separator)
+        .add_item(settings)
         .add_native_item(SystemTrayMenuItem::Separator)
         .add_item(quit);
 
@@ -152,6 +176,7 @@ fn main() {
                     let window: tauri::Window = app.get_window("main").unwrap();
                     match id.as_str() {
                         "toggle_window" => toggle_window(window),
+                        "open_settings" => open_settings(window),
                         "quit_application" => quit_application(window),
                         _ => {}
                     }
@@ -160,6 +185,8 @@ fn main() {
             },
         )
         .invoke_handler(tauri::generate_handler![
+            open_app,
+            open_settings,
             load_settings,
             update_settings,
             toggle_window,
