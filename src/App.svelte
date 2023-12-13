@@ -5,11 +5,6 @@
 </script>
 
 <Router>
-  <nav>
-    <Link to="/">Home</Link>
-    <Link to="/settings">Settings</Link>
-  </nav>
-
   <Route path="/" component={HomePage} />
   <Route path="/settings" component={SettingsPage} />
 </Router>

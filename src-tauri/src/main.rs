@@ -7,6 +7,7 @@ use tauri::GlobalShortcutManager;
 use tauri::Manager;
 use tauri::SystemTray;
 use tauri::{CustomMenuItem, SystemTrayMenu, SystemTrayMenuItem};
+use url::Url;
 
 // Define settings
 #[derive(Serialize, Deserialize)]
@@ -40,16 +41,36 @@ impl From<serde_json::Error> for CommandError {
 fn open_app(window: tauri::Window) {
     println!("Opening app...");
 
+    let current_url: String = window.url().to_string();
+    let mut url = Url::parse(&current_url).expect("failed to parse URL");
+
     window.show().expect("failed to show the window");
     window.set_focus().expect("failed to focus the window");
+
+    url.set_path("/");
+    println!("Navigating to {}", url);
+
+    window
+        .eval(&format!("window.location.href = '{}';", url))
+        .unwrap();
 }
 
 #[tauri::command]
 fn open_settings(window: tauri::Window) {
     println!("Opening settings...");
 
+    let current_url: String = window.url().to_string();
+    let mut url = Url::parse(&current_url).expect("failed to parse URL");
+
     window.show().expect("failed to show the window");
     window.set_focus().expect("failed to focus the window");
+
+    url.set_path("/settings");
+    println!("Navigating to {}", url);
+
+    window
+        .eval(&format!("window.location.href = '{}';", url))
+        .unwrap();
 }
 
 #[tauri::command]

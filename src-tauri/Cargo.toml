@@ -19,6 +19,7 @@ serde_json = "1.0"
 global-hotkey = "0.4.1"
 tokio = "1.35.0"
 dirs = "5.0.1"
+url = "2.5.0"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
