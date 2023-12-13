@@ -32,10 +32,11 @@ input {
 
 .input-box {
   display: flex;
+  flex-direction: column;
   align-items: start;
   justify-content: center;
   width: calc(100% - 2.8rem);
-  margin: 0.8rem;
+  margin: 0.6rem 0 0;
   padding: 0.4rem 0.6rem;
   border-radius: 0.8rem;
   border: none;

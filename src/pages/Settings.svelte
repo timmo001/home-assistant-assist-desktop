@@ -25,7 +25,7 @@
 </script>
 
 <main>
-  <div class="input-box" id="input">
+  <div class="input-box">
     <input
       bind:value={settings.home_assistant.host}
       autocomplete="off"
@@ -33,6 +33,8 @@
       type="text"
       placeholder="Enter a host"
     />
+  </div>
+  <div class="input-box">
     <input
       bind:value={settings.home_assistant.port}
       autocomplete="off"
@@ -40,12 +42,8 @@
       type="number"
       placeholder="Enter a port"
     />
-    <input
-      bind:value={settings.home_assistant.ssl}
-      class="input"
-      type="checkbox"
-      placeholder="Use SSL (This is required in production)"
-    />
+  </div>
+  <div class="input-box">
     <input
       bind:value={settings.home_assistant.access_token}
       autocomplete="off"
@@ -54,6 +52,12 @@
       placeholder="Enter an access token"
     />
   </div>
+  <input
+    bind:value={settings.home_assistant.ssl}
+    class="input"
+    type="checkbox"
+    placeholder="Use SSL (This is required in production)"
+  />
   <button
     class="button"
     on:click={() => {
@@ -65,7 +69,7 @@
   <button
     class="button"
     on:click={() => {
-      invoke("update_settings", settings).then(() => {
+      invoke("update_settings", {settings}).then(() => {
         console.log("Saved settings");
         invoke("open_app");
       });

@@ -208,7 +208,7 @@
 </script>
 
 <main>
-  <div class="input-box" id="input">
+  <div class="input-box query">
     <svg
       preserveAspectRatio="xMidYMid meet"
       focusable="false"
@@ -249,6 +249,10 @@
 </main>
 
 <style>
+  .query {
+    margin: 0.8rem;
+  }
+
   .output-box {
     display: flex;
     flex-direction: column;
