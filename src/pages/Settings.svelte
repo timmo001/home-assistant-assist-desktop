@@ -27,6 +27,10 @@
 <!-- TODO: Rework to use URL instead and extract host, port and ssl from this. -->
 <main>
   <div class="input-box">
+    Autostart
+    <input bind:checked={settings.autostart} class="input" type="checkbox" />
+  </div>
+  <div class="input-box">
     <input
       bind:value={settings.home_assistant.host}
       autocomplete="off"
@@ -53,11 +57,11 @@
       placeholder="Enter an access token"
     />
   </div>
+  Use SSL (This is required in production)
   <input
     bind:checked={settings.home_assistant.ssl}
     class="input"
     type="checkbox"
-    placeholder="Use SSL (This is required in production)"
   />
   <!-- TODO: Style buttons -->
   <button
@@ -71,7 +75,7 @@
   <button
     class="button"
     on:click={() => {
-      invoke("update_settings", {settings}).then(() => {
+      invoke("update_settings", { settings }).then(() => {
         console.log("Saved settings");
         invoke("open_app");
       });

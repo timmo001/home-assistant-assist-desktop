@@ -6,5 +6,6 @@ export interface HomeAssistantSettings {
 }
 
 export interface Settings {
+  autostart?: boolean;
   home_assistant: HomeAssistantSettings;
 }

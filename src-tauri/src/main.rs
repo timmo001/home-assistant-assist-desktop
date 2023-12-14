@@ -2,6 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use serde::{Deserialize, Serialize};
+use tauri_plugin_autostart::MacosLauncher;
 use std::fs::File;
 use tauri::GlobalShortcutManager;
 use tauri::Manager;
@@ -20,6 +21,7 @@ struct HomeAssistantSettings {
 
 #[derive(Serialize, Deserialize)]
 struct Settings {
+    autostart: bool,
     home_assistant: HomeAssistantSettings,
 }
 
@@ -104,6 +106,7 @@ fn load_settings() -> Result<Settings, CommandError> {
         let file: File = File::create(path).unwrap();
         // Create a new Settings struct.
         let settings: Settings = Settings {
+            autostart: false,
             home_assistant: HomeAssistantSettings {
                 access_token: "".to_string(),
                 host: "homeassistant.local".to_string(),
@@ -188,6 +191,10 @@ fn main() {
         .add_item(quit);
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_autostart::init(
+            MacosLauncher::LaunchAgent,
+            Some(vec![]),
+        ))
         .on_window_event(|event: tauri::GlobalWindowEvent| match event.event() {
             tauri::WindowEvent::CloseRequested { api, .. } => {
                 event.window().hide().unwrap();

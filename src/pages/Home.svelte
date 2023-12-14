@@ -6,6 +6,7 @@
     type HassConfig,
     type HassUser,
   } from "home-assistant-js-websocket";
+  import { enable, disable } from "tauri-plugin-autostart-api";
 
   import {
     type AssistResponse,
@@ -27,6 +28,7 @@
   let isProduction = import.meta.env.PROD;
 
   let settings: Settings = {
+    autostart: false,
     home_assistant: {
       access_token: "",
       host: "homeassistant.local",
@@ -149,6 +151,15 @@
         inputElement.focus();
         window.addEventListener("keydown", handleKeydown);
       });
+
+      if (isProduction) {
+        console.log("Running in production. Setting autostart..");
+        if (settings.autostart) {
+          enable().then(() => console.log("Autostart enabled"));
+        } else {
+          disable().then(() => console.log("Autostart disabled"));
+        }
+      }
     });
 
     const handleBlur = () => {
