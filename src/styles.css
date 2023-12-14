@@ -38,7 +38,7 @@ input {
   width: calc(100% - 2.8rem);
   margin: 0.6rem 0 0;
   padding: 0.4rem 0.6rem;
-  border-radius: 0.8rem;
+  border-radius: 1.2rem;
   border: none;
   background-color: rgb(28, 28, 28, 0.8);
   box-shadow: 0 0 0.2rem rgba(0, 0, 0, 0.1);
