@@ -7,6 +7,7 @@
     type HassUser,
   } from "home-assistant-js-websocket";
   import { enable, disable } from "tauri-plugin-autostart-api";
+  import { attachConsole, info } from "tauri-plugin-log-api";
 
   import {
     type AssistResponse,
@@ -51,7 +52,7 @@
     connection: Connection,
     user: HassUser
   ): void {
-    console.log("Connected to Home Assistant:", { connection, user });
+    info(`Connected to Home Assistant:${JSON.stringify({ connection, user })}`);
 
     homeAssistantClient
       .listAssistPipelines()
@@ -60,14 +61,14 @@
           pipelines: AssistPipeline[];
           preferred_pipeline: string | null;
         }) => {
-          console.log("Got pipelines", pipelines);
+          info(`Got pipelines ${JSON.stringify({ pipelines })}`);
           homeAssistantPipelines = pipelines;
         }
       );
   }
 
   function homeAssistantConfigReceived(config: HassConfig): void {
-    console.log("Got Home Assistant config:", config);
+    info(`Got Home Assistant config: ${JSON.stringify({ config })}`);
   }
 
   async function setupHomeAssistantConnection(): Promise<void> {
@@ -126,15 +127,17 @@
       case "Escape":
         text = "";
         // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-        invoke("toggle_window").then(() => console.log("Toggled window"));
+        invoke("toggle_window").then(() => info("Toggled window"));
         break;
     }
   }
 
   onMount(() => {
+    attachConsole().then(() => info("Attached console"));
+
     invoke("load_settings").then((result: unknown) => {
       settings = result as Settings;
-      console.log("Loaded settings:", settings);
+      info(`Loaded settings: ${JSON.stringify({ settings })}`);
 
       // If home assistant is not setup or is not SSL in production, load settings
       if (
@@ -143,7 +146,7 @@
         !settings.home_assistant.port ||
         (isProduction && !settings.home_assistant.ssl)
       ) {
-        invoke("open_settings").then(() => console.log("Opened settings"));
+        invoke("open_settings").then(() => info("Opened settings"));
         return;
       }
 
@@ -153,22 +156,22 @@
       });
 
       if (isProduction) {
-        console.log("Running in production. Setting autostart..");
+        info("Running in production. Setting autostart..");
         if (settings.autostart) {
-          enable().then(() => console.log("Autostart enabled"));
+          enable().then(() => info("Autostart enabled"));
         } else {
-          disable().then(() => console.log("Autostart disabled"));
+          disable().then(() => info("Autostart disabled"));
         }
       }
     });
 
     const handleBlur = () => {
-      console.log("Window lost focus");
-      invoke("hide_window").then(() => console.log("Window hidden"));
+      info("Window lost focus");
+      invoke("hide_window").then(() => info("Window hidden"));
     };
 
     const handleFocus = () => {
-      console.log("Window gained focus");
+      info("Window gained focus");
       window.focus();
       inputElement.focus();
     };
@@ -202,7 +205,7 @@
     // Send to pipeline
     const unsub = await homeAssistantClient.runAssistPipeline(
       (event: PipelineRunEvent) => {
-        console.log("Got pipeline event:", event);
+        info(`Got pipeline event: ${JSON.stringify({ event })}`);
         if (event.type === "intent-end") {
           homeAssistantConversationId =
             event.data.intent_output.conversation_id;

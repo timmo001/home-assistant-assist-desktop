@@ -2,13 +2,13 @@ import {
   type HassConfig,
   type HassUser,
   Auth,
-  callService,
   Connection,
   createConnection,
   createLongLivedTokenAuth,
   getUser,
   subscribeConfig,
 } from "home-assistant-js-websocket";
+import { info } from "tauri-plugin-log-api";
 
 import { type HomeAssistantSettings } from "./types/settings";
 import {
@@ -32,7 +32,7 @@ export class HomeAssistant {
     config?: HomeAssistantSettings,
     connection?: Connection
   ) {
-    console.log("Home Assistant: create new client");
+    info("Home Assistant: create new client");
 
     this.connectedCallback = connectedCallback;
     this.configCallback = configReceivedCallback;
@@ -41,22 +41,8 @@ export class HomeAssistant {
   }
 
   public get connected(): boolean {
-    console.log("Home Assistant: connected:", this.connection !== null);
+    info(`Home Assistant: connected: ${this.connection !== null}`);
     return this.connection !== null;
-  }
-
-  async callService(
-    domain: string,
-    service: string,
-    serviceData: Record<string, unknown>
-  ): Promise<unknown> {
-    if (!this.connection) return;
-    console.log("Call Home Assistant service:", {
-      domain,
-      service,
-      serviceData,
-    });
-    return await callService(this.connection, domain, service, serviceData);
   }
 
   disconnect(): void {
@@ -76,22 +62,22 @@ export class HomeAssistant {
       this.config.port
     }`;
 
-    console.log("Home Assistant: ", url);
+    info(`Home Assistant: ${url}`);
 
     // Create auth object
-    console.log("Home Assistant: createLongLivedTokenAuth");
+    info("Home Assistant: createLongLivedTokenAuth");
     this.auth = createLongLivedTokenAuth(url, this.config.access_token);
 
     // Connect to Home Assistant
-    console.log("Home Assistant: createConnection");
+    info("Home Assistant: createConnection");
     this.connection = await createConnection({ auth: this.auth });
 
     this.connection.addEventListener("ready", () => {
-      console.log("Home Assistant connection ready");
+      info("Home Assistant connection ready");
     });
 
     this.connection.addEventListener("disconnected", () => {
-      console.log("Disconnected from Home Assistant");
+      info("Disconnected from Home Assistant");
       if (this.connection) this.connection.reconnect();
     });
 

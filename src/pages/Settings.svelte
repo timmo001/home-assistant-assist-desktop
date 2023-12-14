@@ -1,6 +1,7 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/tauri";
   import { onMount } from "svelte";
+  import { attachConsole, info } from "tauri-plugin-log-api";
 
   import { type Settings } from "../types/settings";
 
@@ -17,9 +18,11 @@
   };
 
   onMount(() => {
+    attachConsole().then(() => info("Attached console"));
+
     invoke("load_settings").then((result: unknown) => {
       settings = result as Settings;
-      console.log("Loaded settings:", settings);
+      info(`Loaded settings: ${JSON.stringify({ settings })}`);
     });
   });
 </script>
@@ -76,7 +79,7 @@
     class="button"
     on:click={() => {
       invoke("update_settings", { settings }).then(() => {
-        console.log("Saved settings");
+        info("Saved settings");
         invoke("open_app");
       });
     }}

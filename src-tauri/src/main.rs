@@ -2,12 +2,13 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use serde::{Deserialize, Serialize};
-use tauri_plugin_autostart::MacosLauncher;
 use std::fs::File;
 use tauri::GlobalShortcutManager;
 use tauri::Manager;
 use tauri::SystemTray;
 use tauri::{CustomMenuItem, SystemTrayMenu, SystemTrayMenuItem};
+use tauri_plugin_autostart::MacosLauncher;
+use tauri_plugin_log::LogTarget;
 use url::Url;
 
 // Define settings
@@ -76,11 +77,11 @@ fn open_settings(window: tauri::Window) {
 }
 
 #[tauri::command]
-fn load_settings() -> Result<Settings, CommandError> {
-    let settings_path: String = dirs::data_local_dir()
-        .expect("Failed to get local data directory")
-        .join("timmo001")
-        .join("home-assistant-assist")
+fn load_settings(app_handle: tauri::AppHandle) -> Result<Settings, CommandError> {
+    let settings_path: String = app_handle
+        .path_resolver()
+        .app_config_dir()
+        .unwrap()
         .join("settings.json")
         .to_str()
         .unwrap()
@@ -126,11 +127,11 @@ fn load_settings() -> Result<Settings, CommandError> {
 }
 
 #[tauri::command]
-fn update_settings(settings: Settings) -> Result<(), CommandError> {
-    let settings_path: String = dirs::data_local_dir()
-        .expect("Failed to get local data directory")
-        .join("timmo001")
-        .join("home-assistant-assist")
+fn update_settings(app_handle: tauri::AppHandle, settings: Settings) -> Result<(), CommandError> {
+    let settings_path: String = app_handle
+        .path_resolver()
+        .app_config_dir()
+        .unwrap()
         .join("settings.json")
         .to_str()
         .unwrap()
@@ -195,6 +196,11 @@ fn main() {
             MacosLauncher::LaunchAgent,
             Some(vec![]),
         ))
+        .plugin(
+            tauri_plugin_log::Builder::default()
+                .targets([LogTarget::LogDir, LogTarget::Stdout, LogTarget::Webview])
+                .build(),
+        )
         .on_window_event(|event: tauri::GlobalWindowEvent| match event.event() {
             tauri::WindowEvent::CloseRequested { api, .. } => {
                 event.window().hide().unwrap();
