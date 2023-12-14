@@ -9,6 +9,8 @@ use tauri::SystemTray;
 use tauri::{CustomMenuItem, SystemTrayMenu, SystemTrayMenuItem};
 use url::Url;
 
+// TODO: Autohide window when focus is lost
+
 // Define settings
 #[derive(Serialize, Deserialize)]
 struct HomeAssistantSettings {

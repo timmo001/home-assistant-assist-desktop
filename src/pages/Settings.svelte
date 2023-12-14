@@ -24,6 +24,7 @@
   });
 </script>
 
+<!-- TODO: Rework to use URL instead and extract host, port and ssl from this. -->
 <main>
   <div class="input-box">
     <input
@@ -58,6 +59,7 @@
     type="checkbox"
     placeholder="Use SSL (This is required in production)"
   />
+  <!-- TODO: Style buttons -->
   <button
     class="button"
     on:click={() => {
