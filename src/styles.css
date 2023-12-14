@@ -32,7 +32,7 @@ input {
 
 .input-box {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: start;
   justify-content: center;
   width: calc(100% - 2.8rem);

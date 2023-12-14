@@ -129,12 +129,12 @@
       settings = result as Settings;
       console.log("Loaded settings:", settings);
 
-      // if home assistant is not setup or is not SSL in production, load settings
+      // If home assistant is not setup or is not SSL in production, load settings
       if (
         !settings.home_assistant ||
         !settings.home_assistant.host ||
         !settings.home_assistant.port ||
-        (!isProduction && !settings.home_assistant.ssl)
+        (isProduction && !settings.home_assistant.ssl)
       ) {
         invoke("open_settings").then(() => console.log("Opened settings"));
         return;
