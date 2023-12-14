@@ -2,7 +2,7 @@
 version: 2
 updates:
   - package-ecosystem: "cargo"
-    directory: "/"
+    directory: "/src-tauri"
     schedule:
       interval: "daily"
   - package-ecosystem: "github-actions"
