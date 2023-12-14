@@ -13,11 +13,18 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+      - name: ⤵️ Check out code from GitHub
+        uses: actions/checkout@v4.1.1
         with:
-          node-version: "20.x.x"
-          cache: "npm"
-      - run: yarn install --frozen-lockfile
-      - run: yarn tauri build
+          ref: ${{ github.head_ref }}
+      - name: 🏗 Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: yarn
+          cache-dependency-path: yarn.lock
+      - name: 🏗 Install dependencies
+        run: |
+          yarn install --frozen-lockfile
+      - run: |
+          yarn tauri build
