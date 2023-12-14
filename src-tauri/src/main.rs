@@ -9,8 +9,6 @@ use tauri::SystemTray;
 use tauri::{CustomMenuItem, SystemTrayMenu, SystemTrayMenuItem};
 use url::Url;
 
-// TODO: Autohide window when focus is lost
-
 // Define settings
 #[derive(Serialize, Deserialize)]
 struct HomeAssistantSettings {
@@ -159,7 +157,16 @@ fn toggle_window(window: tauri::Window) {
             return;
         }
         window.show().expect("failed to show the window");
+        window.set_focus().expect("failed to focus the window");
+        window
+            .emit("focus", {})
+            .expect("failed to emit focus event");
     }
+}
+
+#[tauri::command]
+fn hide_window(window: tauri::Window) {
+    window.hide().expect("failed to hide the window");
 }
 
 #[tauri::command]
@@ -213,6 +220,7 @@ fn main() {
             load_settings,
             update_settings,
             toggle_window,
+            hide_window,
             quit_application
         ])
         .setup(|app: &mut tauri::App| {

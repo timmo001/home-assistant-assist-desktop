@@ -150,6 +150,25 @@
         window.addEventListener("keydown", handleKeydown);
       });
     });
+
+    const handleBlur = () => {
+      console.log("Window lost focus");
+      invoke("hide_window").then(() => console.log("Window hidden"));
+    };
+
+    const handleFocus = () => {
+      console.log("Window gained focus");
+      window.focus();
+      inputElement.focus();
+    };
+
+    window.addEventListener("blur", handleBlur);
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      window.removeEventListener("blur", handleBlur);
+      window.removeEventListener("focus", handleFocus);
+    };
   });
 
   onDestroy(() => {
