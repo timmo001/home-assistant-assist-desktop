@@ -30,12 +30,12 @@ jobs:
       - name: Rust cache
         uses: swatinem/rust-cache@v2
         with:
-          workspaces: './src-tauri -> target'
+          workspaces: "./src-tauri -> target"
       - name: Sync node version and setup cache
         uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*'
-          cache: 'yarn'
+          node-version: "lts/*"
+          cache: "yarn"
       - name: Install frontend dependencies
         run: yarn install
       - name: Build the app
