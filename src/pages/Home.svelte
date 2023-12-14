@@ -152,11 +152,14 @@
   });
 
   async function callPipeline(): Promise<void> {
-    // CallPipeline([...responses, { type: ResponseType.User, text }]).then(
-    // (result: Response[]) => {
-
     // Disable input
     inputElement.disabled = true;
+
+    // Scroll to bottom
+    outputElement.scroll({
+      top: outputElement.scrollHeight,
+      behavior: "smooth",
+    });
 
     // Set responses
     responses = [...responses, { type: AssistResponseType.User, text }];
@@ -183,6 +186,21 @@
           // message.error = true;
           if (unsub) unsub();
         }
+
+        let scrollCount = 0;
+        const scrollInterval = setInterval(() => {
+          outputElement.scroll({
+            top: outputElement.scrollHeight,
+            behavior: "smooth",
+          });
+          scrollCount++;
+          if (scrollCount > 5) clearInterval(scrollInterval);
+        }, 100);
+
+        // Clear input
+        text = "";
+        inputElement.disabled = false;
+        inputElement.focus();
       },
       {
         start_stage: "intent",
@@ -192,18 +210,6 @@
         conversation_id: homeAssistantConversationId,
       }
     );
-
-    // Scroll to bottom
-    outputElement.scroll({
-      top: outputElement.scrollHeight + 1000,
-      behavior: "smooth",
-    });
-    // Clear input
-    text = "";
-    inputElement.disabled = false;
-    inputElement.focus();
-    // }
-    // );
   }
 </script>
 
