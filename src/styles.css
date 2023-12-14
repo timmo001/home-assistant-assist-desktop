@@ -46,6 +46,42 @@ input {
   margin: 5px;
 }
 
+.button-icon {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 2.8rem;
+  height: 2.8rem;
+  margin: 0;
+  padding: 0.4rem 0.6rem;
+  border-radius: 2.2rem;
+  border: none;
+  background-color: rgba(28, 28, 28, 0.9);
+  box-shadow: 0 0 0.2rem rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.button-icon svg {
+  width: 1.8rem;
+  height: 1.8rem;
+  margin: 0 !important;
+  padding-top: 0.1rem;
+  padding-left: 0.1rem;
+  fill: rgba(248, 248, 248, 0.6);
+}
+
+.button-icon:active,
+.button-icon:hover {
+  background-color: rgba(82, 82, 82, 0.8);
+  box-shadow: 0 0 0.2rem rgba(0, 0, 0, 0.2);
+}
+
+.button-icon:focus {
+  outline: none;
+}
+
 .input-box {
   display: flex;
   flex-direction: row;
