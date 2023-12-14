@@ -1,5 +1,21 @@
+::-webkit-scrollbar {
+  width: 0.2rem;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(28, 28, 28, 0.8);
+  border-radius: 1.8rem;
+  border: 0.2rem solid rgba(0, 0, 0, 0);
+}
+
 html {
-  background-color: rgba(0, 0, 0, 0.8);
+  background-color: rgba(0, 0, 0, 0.6);
+  border-radius: 1.2rem;
+  border: none;
   text-align: center;
   color: rgba(248, 248, 248, 1);
 }
@@ -40,7 +56,7 @@ input {
   padding: 0.4rem 0.6rem;
   border-radius: 1.2rem;
   border: none;
-  background-color: rgb(28, 28, 28, 0.8);
+  background-color: rgba(28, 28, 28, 0.9);
   box-shadow: 0 0 0.2rem rgba(0, 0, 0, 0.1);
 }
 

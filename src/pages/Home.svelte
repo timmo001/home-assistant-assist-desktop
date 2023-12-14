@@ -308,7 +308,7 @@
     align-self: flex-start;
     border-bottom-left-radius: 0;
     box-shadow: 0 0 0.2rem rgba(0, 0, 0, 0.1);
-    background-color: rgba(3, 169, 244, 0.8);
+    background-color: rgba(3, 169, 244, 0.9);
     color: rgb(248, 248, 248);
   }
 
@@ -316,7 +316,7 @@
     align-self: flex-end;
     border-bottom-right-radius: 0;
     box-shadow: 0 0 0.2rem rgba(0, 0, 0, 0.1);
-    background-color: rgba(179, 229, 252, 0.8);
+    background-color: rgba(179, 229, 252, 0.9);
     color: rgb(24, 24, 24);
   }
 </style>
