@@ -307,14 +307,14 @@
   .bubble-assist {
     align-self: flex-start;
     box-shadow: 0 0 0.2rem rgba(0, 0, 0, 0.1);
-    background-color: rgba(1, 169, 244, 0.8);
-    color: rgba(248, 248, 248, 0.8);
+    background-color: rgba(3, 169, 244, 0.8);
+    color: rgb(248, 248, 248);
   }
 
   .bubble-user {
     align-self: flex-end;
     box-shadow: 0 0 0.2rem rgba(0, 0, 0, 0.1);
     background-color: rgba(179, 229, 252, 0.8);
-    color: rgba(28, 28, 28, 0.8);
+    color: rgb(24, 24, 24);
   }
 </style>

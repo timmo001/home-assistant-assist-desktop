@@ -22,7 +22,7 @@ main {
 }
 
 input {
-  background-color: rgba(0, 0, 0, 0.8);
+  background-color: rgb(0, 0, 0);
   color: rgba(248, 248, 248, 1);
   border: 1px solid rgba(248, 248, 248, 1);
   border-radius: 5px;
@@ -40,7 +40,7 @@ input {
   padding: 0.4rem 0.6rem;
   border-radius: 0.8rem;
   border: none;
-  background-color: rgba(28, 28, 28, 0.8);
+  background-color: rgb(28, 28, 28, 0.8);
   box-shadow: 0 0 0.2rem rgba(0, 0, 0, 0.1);
 }
 
