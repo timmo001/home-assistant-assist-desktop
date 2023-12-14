@@ -53,7 +53,7 @@
     />
   </div>
   <input
-    bind:value={settings.home_assistant.ssl}
+    bind:checked={settings.home_assistant.ssl}
     class="input"
     type="checkbox"
     placeholder="Use SSL (This is required in production)"
