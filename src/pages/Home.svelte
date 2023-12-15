@@ -224,7 +224,6 @@
             event.data.intent_output.conversation_id;
           const plain = event.data.intent_output.response.speech?.plain;
           if (plain) {
-            // message.text = plain.speech;
             responses = [
               ...responses,
               { type: AssistResponseType.Assist, text: plain.speech },
@@ -233,8 +232,10 @@
           if (unsub) unsub();
         }
         if (event.type === "error") {
-          // message.text = event.data.message;
-          // message.error = true;
+          responses = [
+            ...responses,
+            { type: AssistResponseType.Error, text: event.data.message },
+          ];
           if (unsub) unsub();
         }
 
@@ -313,7 +314,9 @@
         class={`bubble ${
           response.type === AssistResponseType.Assist
             ? "bubble-assist"
-            : "bubble-user"
+            : response.type === AssistResponseType.Error
+              ? "bubble-error"
+              : "bubble-user"
         }`}
       >
         {response.text}
@@ -368,6 +371,14 @@
     border-bottom-left-radius: 0;
     box-shadow: 0 0 0.2rem rgba(0, 0, 0, 0.1);
     background-color: rgba(3, 169, 244, 0.9);
+    color: rgb(248, 248, 248);
+  }
+
+  .bubble-error {
+    align-self: flex-start;
+    border-bottom-left-radius: 0;
+    box-shadow: 0 0 0.2rem rgba(0, 0, 0, 0.1);
+    background-color: rgba(244, 67, 54, 0.9);
     color: rgb(248, 248, 248);
   }
 

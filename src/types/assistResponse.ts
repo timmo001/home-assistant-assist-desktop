@@ -1,5 +1,6 @@
 export enum AssistResponseType {
   Assist = "assist",
+  Error = "error",
   User = "user",
 }
 
