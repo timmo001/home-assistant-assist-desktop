@@ -202,7 +202,7 @@
     // Set responses
     responses = [...responses, { type: AssistResponseType.User, text }];
 
-    // Send to pipeline
+    // Call pipeline
     const unsub = await homeAssistantClient.runAssistPipeline(
       (event: PipelineRunEvent) => {
         info(`Got pipeline event: ${JSON.stringify({ event })}`);
@@ -249,6 +249,15 @@
       }
     );
   }
+
+  async function callVoicePipeline(): Promise<void> {
+    // Clear input
+    text = "";
+    // Disable input
+    inputElement.disabled = true;
+
+    // Call voice pipeline
+  }
 </script>
 
 <main>
@@ -268,7 +277,7 @@
       type="text"
       placeholder="Enter a request.."
     />
-    <button class="button-icon">
+    <button class="button-icon" on:click={callVoicePipeline}>
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
         <title>microphone-outline</title>
         <path
