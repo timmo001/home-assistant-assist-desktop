@@ -47,6 +47,8 @@
     preferred_pipeline: string | null;
   };
   let homeAssistantConversationId: string | null;
+  let currentPipeline: string | null;
+  let showPipelineMenu = false;
 
   function homeAssistantConnected(
     connection: Connection,
@@ -63,6 +65,7 @@
         }) => {
           info(`Got pipelines ${JSON.stringify({ pipelines })}`);
           homeAssistantPipelines = pipelines;
+          currentPipeline = pipelines.preferred_pipeline;
         }
       );
   }
@@ -204,6 +207,16 @@
 
     // Call pipeline
     const unsub = await homeAssistantClient.runAssistPipeline(
+      {
+        start_stage: "intent",
+        input: { text },
+        end_stage: "intent",
+        pipeline:
+          currentPipeline ||
+          homeAssistantPipelines.preferred_pipeline ||
+          undefined,
+        conversation_id: homeAssistantConversationId,
+      },
       (event: PipelineRunEvent) => {
         info(`Got pipeline event: ${JSON.stringify({ event })}`);
         if (event.type === "intent-end") {
@@ -239,13 +252,6 @@
         text = "";
         inputElement.disabled = false;
         inputElement.focus();
-      },
-      {
-        start_stage: "intent",
-        input: { text },
-        end_stage: "intent",
-        pipeline: homeAssistantPipelines.preferred_pipeline || undefined,
-        conversation_id: homeAssistantConversationId,
       }
     );
   }
@@ -258,16 +264,29 @@
 
     // Call voice pipeline
   }
+
+  function togglePipelineMenu(): void {
+    showPipelineMenu = !showPipelineMenu;
+  }
+
+  function selectPipline(pipeline: AssistPipeline): void {
+    currentPipeline = pipeline.id;
+    responses = [];
+    showPipelineMenu = false;
+  }
 </script>
 
 <main>
   <div class="input-box query">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-      <title>comment-processing-outline</title>
-      <path
-        d="M9,22A1,1 0 0,1 8,21V18H4A2,2 0 0,1 2,16V4C2,2.89 2.9,2 4,2H20A2,2 0 0,1 22,4V16A2,2 0 0,1 20,18H13.9L10.2,21.71C10,21.9 9.75,22 9.5,22V22H9M10,16V19.08L13.08,16H20V4H4V16H10M17,11H15V9H17V11M13,11H11V9H13V11M9,11H7V9H9V11Z"
-      />
-    </svg>
+    <button class="button-icon" on:click={togglePipelineMenu}>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <title>comment-processing-outline</title>
+        <path
+          d="M9,22A1,1 0 0,1 8,21V18H4A2,2 0 0,1 2,16V4C2,2.89 2.9,2 4,2H20A2,2 0 0,1 22,4V16A2,2 0 0,1 20,18H13.9L10.2,21.71C10,21.9 9.75,22 9.5,22V22H9M10,16V19.08L13.08,16H20V4H4V16H10M17,11H15V9H17V11M13,11H11V9H13V11M9,11H7V9H9V11Z"
+        />
+      </svg>
+    </button>
+
     <input
       bind:this={inputElement}
       autocomplete="off"
@@ -277,6 +296,7 @@
       type="text"
       placeholder="Enter a request.."
     />
+
     <button class="button-icon" on:click={callVoicePipeline}>
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
         <title>microphone-outline</title>
@@ -286,6 +306,7 @@
       </svg>
     </button>
   </div>
+
   <div bind:this={outputElement} class="output-box" id="output">
     {#each responses as response}
       <div
@@ -299,6 +320,21 @@
       </div>
     {/each}
   </div>
+
+  {#if showPipelineMenu}
+    <div class="dropdown-menu" on:blur={() => (showPipelineMenu = false)}>
+      {#each homeAssistantPipelines.pipelines as option}
+        <button
+          class={`dropdown-item ${
+            currentPipeline === option.id ? "selected" : ""
+          }`}
+          on:click={(e) => selectPipline(option)}
+        >
+          {option.name}
+        </button>
+      {/each}
+    </div>
+  {/if}
 </main>
 
 <style>
@@ -341,5 +377,43 @@
     box-shadow: 0 0 0.2rem rgba(0, 0, 0, 0.1);
     background-color: rgba(179, 229, 252, 0.9);
     color: rgb(24, 24, 24);
+  }
+
+  .dropdown-menu {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    top: 3.8rem;
+    left: 0;
+    margin: 0.8rem;
+    border-radius: 1.2rem;
+    background-color: rgba(28, 28, 28, 0.9);
+    box-shadow: 0 0 0.2rem rgba(0, 0, 0, 0.1);
+  }
+
+  .dropdown-item {
+    background: none;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    font-size: 1.2rem;
+    font-weight: 400;
+    line-height: 1.4;
+    color: rgb(248, 248, 248);
+    cursor: pointer;
+  }
+
+  .dropdown-item:hover,
+  .selected {
+    background-color: rgba(82, 82, 82, 0.8);
+  }
+
+  .dropdown-item:first-child {
+    border-top-left-radius: 1.2rem;
+    border-top-right-radius: 1.2rem;
+  }
+
+  .dropdown-item:last-child {
+    border-bottom-left-radius: 1.2rem;
+    border-bottom-right-radius: 1.2rem;
   }
 </style>

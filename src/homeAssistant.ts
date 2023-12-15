@@ -169,8 +169,8 @@ export class HomeAssistant {
   };
 
   runAssistPipeline = (
-    callback: (event: PipelineRunEvent) => void,
-    options: PipelineRunOptions
+    options: PipelineRunOptions,
+    callback: (event: PipelineRunEvent) => void
   ) =>
     this.connection?.subscribeMessage<PipelineRunEvent>(callback, {
       ...options,
