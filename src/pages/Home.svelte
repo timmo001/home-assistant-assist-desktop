@@ -190,6 +190,16 @@
     };
 
     const handleTriggerVoicePipeline = () => {
+      const supportsMicrophone = AudioRecorder.isSupported;
+      if (!supportsMicrophone) {
+        error("Microphone not supported");
+        responses = [
+          ...responses,
+          { type: AssistResponseType.Error, text: "Microphone not supported" },
+        ];
+        return;
+      }
+
       if (!audioRecorder?.active) startListening();
     };
 
