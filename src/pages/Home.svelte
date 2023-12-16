@@ -24,7 +24,6 @@
   // TODO: Resize window to fit content and max out at 40% of the screen height
   // TODO: Text to Speech (pipeline)
   // TODO: Speech to Text (pipeline)
-  // TODO: Assist pipeline picker
 
   // Get production status from environment
   let isProduction = import.meta.env.PROD;
