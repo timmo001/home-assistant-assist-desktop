@@ -192,10 +192,19 @@ fn hide_window(window: tauri::Window) {
 }
 
 #[tauri::command]
-fn open_logs(app_handle: tauri::AppHandle) {
-    let path = app_handle.path_resolver().app_log_dir().unwrap();
+fn open_logs_directory(app_handle: tauri::AppHandle) {
+    let path: String = app_handle
+        .path_resolver()
+        .app_log_dir()
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .to_string();
+
+    println!("Opening logs directory at {}...", path);
+
     // Open file with default application
-    opener::open(&path).unwrap();
+    opener::open(path).unwrap();
 }
 
 #[tauri::command]
@@ -212,7 +221,7 @@ fn main() {
         ))
         .add_native_item(SystemTrayMenuItem::Separator)
         .add_item(CustomMenuItem::new("open_settings".to_string(), "Settings"))
-        .add_item(CustomMenuItem::new("open_logs".to_string(), "Open Logs"))
+        .add_item(CustomMenuItem::new("open_logs_directory".to_string(), "Open Logs"))
         .add_native_item(SystemTrayMenuItem::Separator)
         .add_item(CustomMenuItem::new("quit_application".to_string(), "Quit"));
 
@@ -236,15 +245,12 @@ fn main() {
         .system_tray(SystemTray::new().with_menu(tray_menu))
         .on_system_tray_event(
             |app: &tauri::AppHandle, event: tauri::SystemTrayEvent| match event {
-                tauri::SystemTrayEvent::LeftClick { .. } => {
-                    let window: tauri::Window = app.get_window("main").unwrap();
-                    toggle_window(window);
-                }
                 tauri::SystemTrayEvent::MenuItemClick { id, .. } => {
                     let window: tauri::Window = app.get_window("main").unwrap();
                     match id.as_str() {
                         "toggle_window" => toggle_window(window),
                         "open_settings" => open_settings(window),
+                        "open_logs_directory" => open_logs_directory(app.clone()),
                         "quit_application" => quit_application(window),
                         _ => {}
                     }
@@ -260,7 +266,7 @@ fn main() {
             toggle_window,
             trigger_voice_pipeline,
             hide_window,
-            open_logs,
+            open_logs_directory,
             quit_application
         ])
         .setup(|app: &mut tauri::App| {

@@ -21,8 +21,6 @@ You can find out more about Home Assistant Assist [here](https://www.home-assist
   - `Alt + A` to toggle window
   - `Alt + Shift + A` to trigger voice pipelines.
 - System tray icon
-  - `Left click` to toggle window
-  - `Right click` to open context menu
 
 ![Screenshot 01](https://community-assets.home-assistant.io/original/4X/b/f/f/bff536dbd616670babbf52ae25940a3d8cb1e2c6.png)
 
