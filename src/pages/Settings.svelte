@@ -16,6 +16,8 @@
       ssl: true,
     },
   };
+  let home_assistant_url = "";
+  let saveDisabled = true;
 
   onMount(() => {
     attachConsole().then(() => info("Attached console"));
@@ -23,11 +25,69 @@
     invoke("load_settings").then((result: unknown) => {
       settings = result as Settings;
       info(`Loaded settings: ${JSON.stringify({ settings })}`);
+      home_assistant_url = `${
+        settings.home_assistant.ssl ? "https" : "http"
+      }://${settings.home_assistant.host}${
+        settings.home_assistant.port === 443
+          ? ""
+          : `:${settings.home_assistant.port}`
+      }`;
+      validate();
     });
   });
+
+  function validate(): void {
+    info(`Validating settings: ${JSON.stringify({ home_assistant_url })}`);
+    if (home_assistant_url === "") {
+      info("Home Assistant URL is empty");
+      saveDisabled = true;
+      return;
+    }
+    if (isProduction && !home_assistant_url.startsWith("https://")) {
+      info("Home Assistant URL is not HTTPS");
+      saveDisabled = true;
+      return;
+    }
+    if (!isProduction && !home_assistant_url.startsWith("http")) {
+      info("Home Assistant URL is not HTTP");
+      saveDisabled = true;
+      return;
+    }
+
+    saveDisabled = false;
+    info(
+      `Validated settings: ${JSON.stringify({
+        home_assistant_url,
+        saveDisabled,
+      })}`
+    );
+  }
+
+  function saveSettings(): void {
+    if (home_assistant_url.endsWith("/")) {
+      home_assistant_url = home_assistant_url.slice(0, -1);
+    }
+
+    settings.home_assistant.host = home_assistant_url.split("://")[1];
+    if (settings.home_assistant.host.includes(":")) {
+      settings.home_assistant.port = parseInt(
+        settings.home_assistant.host.split(":")[1]
+      );
+
+      settings.home_assistant.host = settings.home_assistant.host.split(":")[0];
+    } else {
+      settings.home_assistant.port = home_assistant_url.startsWith("https")
+        ? 443
+        : 80;
+    }
+    settings.home_assistant.ssl = home_assistant_url.startsWith("https");
+    invoke("update_settings", { settings }).then(() => {
+      info("Saved settings");
+      invoke("open_app");
+    });
+  }
 </script>
 
-<!-- TODO: Rework to use URL instead and extract host, port and ssl from this. -->
 <main>
   <div class="input-box">
     <span>Autostart</span>
@@ -36,37 +96,23 @@
   <div class="input-box">
     <span>Home Assistant URL</span>
     <input
-      bind:value={settings.home_assistant.host}
+      bind:value={home_assistant_url}
       autocomplete="off"
       class="input"
       type="text"
       placeholder="Enter a host"
+      on:change={validate}
     />
   </div>
   <div class="input-box">
-    <input
-      bind:value={settings.home_assistant.port}
-      autocomplete="off"
-      class="input"
-      type="number"
-      placeholder="Enter a port"
-    />
-  </div>
-  <div class="input-box">
+    <span>Home Assistant Token</span>
     <input
       bind:value={settings.home_assistant.access_token}
       autocomplete="off"
       class="input"
       type="text"
       placeholder="Enter an access token"
-    />
-  </div>
-  <div class="input-box">
-    <span>Use SSL (This is required in production)</span>
-    <input
-      bind:checked={settings.home_assistant.ssl}
-      class="input"
-      type="checkbox"
+      on:change={validate}
     />
   </div>
   <div class="button-container">
@@ -79,13 +125,9 @@
       Cancel
     </button>
     <button
-      class="button"
-      on:click={() => {
-        invoke("update_settings", { settings }).then(() => {
-          info("Saved settings");
-          invoke("open_app");
-        });
-      }}
+      disabled={saveDisabled}
+      class={`button ${saveDisabled ? "" : "button-enabled"}`}
+      on:click={saveSettings}
     >
       Save
     </button>
@@ -94,6 +136,7 @@
 
 <style>
   .button-container {
+    height: 100%;
     width: 100%;
     margin: 0.2rem;
     display: inline-flex;
@@ -102,7 +145,7 @@
   }
 
   .button {
-    background-color: rgba(248, 248, 248, 0.9);
+    background-color: rgba(248, 248, 248, 0.8);
     border: none;
     color: rgb(28, 28, 28);
     margin: 0.6rem;
@@ -113,8 +156,8 @@
     cursor: pointer;
   }
 
-  .button:hover {
-    background-color: rgba(248, 248, 248, 0.8);
+  .button-enabled:hover {
+    background-color: rgba(248, 248, 248, 0.9);
   }
 
   .input-box input {
