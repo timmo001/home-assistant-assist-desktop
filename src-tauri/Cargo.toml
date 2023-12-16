@@ -1,5 +1,5 @@
 [package]
-name = "home-assistant-assist"
+name = "home-assistant-assist-desktop"
 version = "0.0.0"
 description = "A Tauri App"
 authors = ["you"]
