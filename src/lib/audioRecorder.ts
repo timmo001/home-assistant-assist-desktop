@@ -1,4 +1,4 @@
-import { error } from "tauri-plugin-log-api";
+import { error, info } from "tauri-plugin-log-api";
 
 export class AudioRecorder {
   private _active = false;
@@ -73,14 +73,20 @@ export class AudioRecorder {
   private async _createContext() {
     // @ts-ignore-next-line
     this._context = new (window.AudioContext || window.webkitAudioContext)();
+    info("Created audio context");
     this._stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    info("Created stream");
 
+    info(`url: ${import.meta.url}`);
     await this._context.audioWorklet.addModule(
       new URL("./recorder.worklet.js", import.meta.url)
     );
+    info("Added worklet");
 
     this._source = this._context.createMediaStreamSource(this._stream);
+    info("Created source");
     this._recorder = new AudioWorkletNode(this._context, "recorder.worklet");
+    info("Created recorder");
 
     this._recorder.port.onmessage = (e) => {
       if (!this._active) {
@@ -90,5 +96,6 @@ export class AudioRecorder {
     };
     this._active = true;
     this._source.connect(this._recorder);
+    info("Connected source to recorder");
   }
 }
