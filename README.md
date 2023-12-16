@@ -6,6 +6,13 @@ Compatible with Windows, MacOS, and Linux.
 
 You can find out more about Home Assistant Assist [here](https://www.home-assistant.io/voice_control/).
 
+## Features
+
+- Speech to text
+- Text to speech
+- Pipeline picker
+- Toggle with keyboard shortcut (Alt + A)
+
 ## Installation
 
 You can download the latest release from the [releases](https://github.com/timmo001/home-assistant-assist-desktop/releases) page.
