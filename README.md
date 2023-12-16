@@ -18,6 +18,10 @@ You can find out more about Home Assistant Assist [here](https://www.home-assist
   - `Left click` to toggle window
   - `Right click` to open context menu
 
+![Screenshot 01](https://community-assets.home-assistant.io/original/4X/b/f/f/bff536dbd616670babbf52ae25940a3d8cb1e2c6.png)
+
+![Screenshot 02](https://community-assets.home-assistant.io/original/4X/b/2/8/b2811c098b857ebc63292b8cd52a5240ea17ae37.png)
+
 ## Installation
 
 You can download the latest release from the [releases](https://github.com/timmo001/home-assistant-assist-desktop/releases) page.
