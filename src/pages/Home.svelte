@@ -19,15 +19,34 @@
     type PipelineRunEvent,
   } from "../types/homeAssistantAssist";
   import { AudioRecorder } from "../lib/audioRecorder";
-  import { HomeAssistant } from "../lib/homeAssistant";
+  import {
+    HomeAssistant,
+    generateHomeAssistantURLFromSettings,
+  } from "../lib/homeAssistant";
 
   // TODO: Resize window to fit content and max out at 40% of the screen height
   // TODO: Text to Speech (pipeline)
   // TODO: Speech to Text (pipeline)
 
-  // Get production status from environment
+  let audio: HTMLAudioElement | undefined;
+  let audioBuffer: Int16Array[] | undefined;
+  let audioRecorder: AudioRecorder | undefined;
+  let homeAssistantClient: HomeAssistant;
+  let homeAssistantConversationId: string | null;
+  let homeAssistantCurrentPipeline: AssistPipeline | null;
+  let homeAssistantPipelines: {
+    pipelines: AssistPipeline[];
+    preferred_pipeline: string | null;
+  };
+  let inputElement: HTMLInputElement;
   let isProduction = import.meta.env.PROD;
-
+  let outputElement: HTMLDivElement;
+  let responses: AssistResponse[] = [
+    {
+      type: AssistResponseType.Assist,
+      text: "How can I assist?",
+    },
+  ];
   let settings: Settings = {
     autostart: false,
     home_assistant: {
@@ -37,23 +56,9 @@
       ssl: false,
     },
   };
-  let responses: AssistResponse[] = [];
-  let text: string;
-  let inputElement: HTMLInputElement;
-  let outputElement: HTMLDivElement;
-  let homeAssistantClient: HomeAssistant;
-  let homeAssistantPipeline: AssistPipeline | null;
-  let homeAssistantPipelines: {
-    pipelines: AssistPipeline[];
-    preferred_pipeline: string | null;
-  };
-  let homeAssistantConversationId: string | null;
-  let currentPipeline: string | null;
   let showPipelineMenu = false;
-  let audio: HTMLAudioElement | undefined;
-  let audioRecorder: AudioRecorder | undefined;
-  let audioBuffer: Int16Array[] | undefined;
   let sttBinaryHandlerId: number | null;
+  let text: string;
 
   function homeAssistantConnected(
     connection: Connection,
@@ -70,7 +75,10 @@
         }) => {
           info(`Got pipelines ${JSON.stringify({ pipelines })}`);
           homeAssistantPipelines = pipelines;
-          currentPipeline = pipelines.preferred_pipeline;
+          homeAssistantCurrentPipeline =
+            pipelines.pipelines.find(
+              (pipeline) => pipeline.id === pipelines.preferred_pipeline
+            ) || null;
         }
       );
   }
@@ -232,7 +240,7 @@
         input: { text },
         end_stage: "intent",
         pipeline:
-          currentPipeline ||
+          homeAssistantCurrentPipeline?.id ||
           homeAssistantPipelines.preferred_pipeline ||
           undefined,
         conversation_id: homeAssistantConversationId,
@@ -316,9 +324,14 @@
       const unsub = await homeAssistantClient.runAssistPipeline(
         {
           start_stage: "stt",
-          end_stage: homeAssistantPipeline?.tts_engine ? "tts" : "intent",
+          end_stage: homeAssistantCurrentPipeline?.tts_engine
+            ? "tts"
+            : "intent",
           input: { sample_rate: audioRecorder.sampleRate! },
-          pipeline: homeAssistantPipeline?.id,
+          pipeline:
+            homeAssistantCurrentPipeline?.id ||
+            homeAssistantPipelines.preferred_pipeline ||
+            undefined,
           conversation_id: homeAssistantConversationId,
         },
         (event) => {
@@ -356,8 +369,11 @@
           }
 
           if (event.type === "tts-end") {
-            const url = event.data.tts_output.url;
+            const url = `${generateHomeAssistantURLFromSettings(
+              settings.home_assistant
+            )}${event.data.tts_output.url}`;
             audio = new Audio(url);
+            info(`Playing audio: ${url}`);
             audio.play();
             audio.addEventListener("ended", unloadAudio);
             audio.addEventListener("pause", unloadAudio);
@@ -452,9 +468,22 @@
   }
 
   function selectPipline(pipeline: AssistPipeline): void {
-    currentPipeline = pipeline.id;
-    responses = [];
+    homeAssistantCurrentPipeline = pipeline;
+    responses = [
+      ...responses,
+      {
+        type: AssistResponseType.Assist,
+        text: `Selected pipeline: ${pipeline.name}`,
+      },
+    ];
+
     showPipelineMenu = false;
+
+    // Scroll to bottom
+    outputElement.scroll({
+      top: outputElement.scrollHeight,
+      behavior: "smooth",
+    });
   }
 </script>
 
@@ -516,7 +545,7 @@
     {#each homeAssistantPipelines.pipelines as option}
       <button
         class={`dropdown-item ${
-          currentPipeline === option.id ? "selected" : ""
+          homeAssistantCurrentPipeline?.id === option.id ? "selected" : ""
         }`}
         on:click={(e) => selectPipline(option)}
       >

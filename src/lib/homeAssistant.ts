@@ -19,6 +19,12 @@ import {
   type AssistPipelineMutableParams,
 } from "../types/homeAssistantAssist";
 
+export function generateHomeAssistantURLFromSettings(settings: HomeAssistantSettings): string {
+  return `${settings.ssl ? "https" : "http"}://${settings.host}${
+    settings.port === 443 ? "" : `:${settings.port}`
+  }`;
+}
+
 export class HomeAssistant {
   public connection: Connection | null = null;
 

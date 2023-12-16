@@ -4,6 +4,7 @@
   import { attachConsole, info } from "tauri-plugin-log-api";
 
   import { type Settings } from "../types/settings";
+  import { generateHomeAssistantURLFromSettings } from "../lib/homeAssistant";
 
   // Get production status from environment
   let isProduction = import.meta.env.PROD;
@@ -25,13 +26,9 @@
     invoke("load_settings").then((result: unknown) => {
       settings = result as Settings;
       info(`Loaded settings: ${JSON.stringify({ settings })}`);
-      home_assistant_url = `${
-        settings.home_assistant.ssl ? "https" : "http"
-      }://${settings.home_assistant.host}${
-        settings.home_assistant.port === 443
-          ? ""
-          : `:${settings.home_assistant.port}`
-      }`;
+      home_assistant_url = generateHomeAssistantURLFromSettings(
+        settings.home_assistant
+      );
       validate();
     });
   });
