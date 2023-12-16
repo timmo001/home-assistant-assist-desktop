@@ -181,7 +181,7 @@ fn quit_application(window: tauri::Window) {
 
 fn main() {
     let toggle: CustomMenuItem =
-        CustomMenuItem::new("toggle_window".to_string(), "Show/Hide Window");
+        CustomMenuItem::new("toggle_window".to_string(), "Show/Hide Window (Alt+A)");
     let settings: CustomMenuItem = CustomMenuItem::new("open_settings".to_string(), "Settings");
     let quit: CustomMenuItem = CustomMenuItem::new("quit_application".to_string(), "Quit");
     let tray_menu: SystemTrayMenu = SystemTrayMenu::new()
