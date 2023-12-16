@@ -192,22 +192,29 @@ fn hide_window(window: tauri::Window) {
 }
 
 #[tauri::command]
+fn open_logs(app_handle: tauri::AppHandle) {
+    let path = app_handle.path_resolver().app_log_dir().unwrap();
+    // Open file with default application
+    opener::open(&path).unwrap();
+}
+
+#[tauri::command]
 fn quit_application(window: tauri::Window) {
     window.close().expect("failed to close the window");
     std::process::exit(0);
 }
 
 fn main() {
-    let toggle: CustomMenuItem =
-        CustomMenuItem::new("toggle_window".to_string(), "Show/Hide Window (Alt+A)");
-    let settings: CustomMenuItem = CustomMenuItem::new("open_settings".to_string(), "Settings");
-    let quit: CustomMenuItem = CustomMenuItem::new("quit_application".to_string(), "Quit");
     let tray_menu: SystemTrayMenu = SystemTrayMenu::new()
-        .add_item(toggle)
+        .add_item(CustomMenuItem::new(
+            "toggle_window".to_string(),
+            "Show/Hide Window (Alt+A)",
+        ))
         .add_native_item(SystemTrayMenuItem::Separator)
-        .add_item(settings)
+        .add_item(CustomMenuItem::new("open_settings".to_string(), "Settings"))
+        .add_item(CustomMenuItem::new("open_logs".to_string(), "Open Logs"))
         .add_native_item(SystemTrayMenuItem::Separator)
-        .add_item(quit);
+        .add_item(CustomMenuItem::new("quit_application".to_string(), "Quit"));
 
     tauri::Builder::default()
         .plugin(tauri_plugin_autostart::init(
@@ -253,6 +260,7 @@ fn main() {
             toggle_window,
             trigger_voice_pipeline,
             hide_window,
+            open_logs,
             quit_application
         ])
         .setup(|app: &mut tauri::App| {

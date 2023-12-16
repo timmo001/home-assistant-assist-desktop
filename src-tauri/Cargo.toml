@@ -23,6 +23,7 @@ global-hotkey = "0.4.1"
 log = "^0.4"
 tokio = "1.35.0"
 url = "2.5.0"
+opener = "0.6.1"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
