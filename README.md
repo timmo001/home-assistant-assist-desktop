@@ -12,7 +12,7 @@ You can download the latest release from the [releases](https://github.com/timmo
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/en/) LTS or Current
+- [Node.js](https://nodejs.org/en/)
 - [Yarn](https://yarnpkg.com/)
 - [Rust](https://www.rust-lang.org/)
 
