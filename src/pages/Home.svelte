@@ -183,7 +183,7 @@
 
     const handleBlur = () => {
       info("Window lost focus");
-      // invoke("hide_window").then(() => info("Window hidden"));
+      invoke("hide_window").then(() => info("Window hidden"));
     };
 
     const handleFocus = () => {
