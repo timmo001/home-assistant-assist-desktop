@@ -6,6 +6,11 @@ Compatible with Windows, MacOS, and Linux.
 
 You can find out more about Home Assistant Assist [here](https://www.home-assistant.io/voice_control/).
 
+[Community forum post](https://community.home-assistant.io/t/home-assistant-assist-desktop/656737?u=timmo001)
+[Discuss project](https://github.com/timmo001/home-assistant-assist-desktop/discussions)
+[Report issues](https://github.com/timmo001/home-assistant-assist-desktop/issues)
+
+
 ## Features
 
 - Speech to text
