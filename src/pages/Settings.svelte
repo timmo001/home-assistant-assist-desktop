@@ -13,7 +13,7 @@
       access_token: "",
       host: "homeassistant.local",
       port: 8123,
-      ssl: false,
+      ssl: true,
     },
   };
 
@@ -34,6 +34,7 @@
     <input bind:checked={settings.autostart} class="input" type="checkbox" />
   </div>
   <div class="input-box">
+    <span>Home Assistant URL</span>
     <input
       bind:value={settings.home_assistant.host}
       autocomplete="off"

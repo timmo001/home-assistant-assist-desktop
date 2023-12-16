@@ -1,9 +1,10 @@
 ::-webkit-scrollbar {
+  background: rgba(0, 0, 0, 0);
   width: 0.2rem;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0);
 }
 
 ::-webkit-scrollbar-thumb {
@@ -46,6 +47,12 @@ input {
   margin: 5px;
 }
 
+hr {
+  width: 100%;
+  border: 0.05rem solid rgba(248, 248, 248, 0.2);
+  margin: 0;
+}
+
 .button-icon {
   display: flex;
   flex-direction: row;
@@ -83,7 +90,7 @@ input {
 .input-box {
   display: flex;
   flex-direction: row;
-  align-items: start;
+  align-items: center;
   justify-content: center;
   width: calc(100% - 2.8rem);
   margin: 0.6rem 0 0;
@@ -102,15 +109,15 @@ input {
 }
 
 .input-box span {
-  display: flex;
-  flex-direction: column;
-  align-items: start;
-  justify-content: center;
+  flex: 1;
+  text-align: start;
   width: 100%;
   padding: 0 0.8rem;
 }
 
 .input-box input {
+  flex: 2;
+  text-align: start;
   outline: none;
   border: none;
   background-color: transparent;

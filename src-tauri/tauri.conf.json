@@ -42,8 +42,8 @@
     "windows": [
       {
         "title": "Home Assistant Assist",
-        "width": 640,
-        "height": 340,
+        "width": 620,
+        "height": 300,
         "alwaysOnTop": true,
         "center": true,
         "decorations": false,

@@ -323,22 +323,30 @@
       </div>
     {/each}
   </div>
-
-  {#if showPipelineMenu}
-    <div class="dropdown-menu" on:blur={() => (showPipelineMenu = false)}>
-      {#each homeAssistantPipelines.pipelines as option}
-        <button
-          class={`dropdown-item ${
-            currentPipeline === option.id ? "selected" : ""
-          }`}
-          on:click={(e) => selectPipline(option)}
-        >
-          {option.name}
-        </button>
-      {/each}
-    </div>
-  {/if}
 </main>
+
+{#if showPipelineMenu}
+  <div class="dropdown-menu" on:blur={() => (showPipelineMenu = false)}>
+    {#each homeAssistantPipelines.pipelines as option}
+      <button
+        class={`dropdown-item ${
+          currentPipeline === option.id ? "selected" : ""
+        }`}
+        on:click={(e) => selectPipline(option)}
+      >
+        {option.name}
+      </button>
+    {/each}
+    <hr />
+    <button
+      class="dropdown-item"
+      on:click={(e) =>
+        invoke("open_settings").then(() => info("Opened settings"))}
+    >
+      Settings
+    </button>
+  </div>
+{/if}
 
 <style>
   .query {
@@ -394,12 +402,18 @@
     position: absolute;
     display: flex;
     flex-direction: column;
-    top: 3.8rem;
-    left: 0;
-    margin: 0.8rem;
+    top: 4.6rem;
+    left: 0.8rem;
+    height: 220px;
     border-radius: 1.2rem;
-    background-color: rgba(28, 28, 28, 0.9);
     box-shadow: 0 0 0.2rem rgba(0, 0, 0, 0.1);
+    overflow-x: hidden;
+    overflow-y: auto;
+    z-index: 100;
+  }
+
+  .dropdown-menu::-webkit-scrollbar {
+    width: 0px;
   }
 
   .dropdown-item {
@@ -410,6 +424,7 @@
     font-weight: 400;
     line-height: 1.4;
     color: rgb(248, 248, 248);
+    background-color: rgba(28, 28, 28, 0.9);
     cursor: pointer;
   }
 
