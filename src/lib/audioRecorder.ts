@@ -38,7 +38,7 @@ export class AudioRecorder {
       try {
         await this._createContext();
       } catch (err: any) {
-        error(`Error creating context: ${JSON.stringify(err)}`);
+        error(`Error creating context: ${err}`);
         this._active = false;
       }
     } else {
