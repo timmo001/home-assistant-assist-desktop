@@ -1,5 +1,6 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/tauri";
+  import { listen } from "@tauri-apps/api/event";
   import { onDestroy, onMount } from "svelte";
   import {
     type Connection,
@@ -23,10 +24,6 @@
     HomeAssistant,
     generateHomeAssistantURLFromSettings,
   } from "../lib/homeAssistant";
-
-  // TODO: Resize window to fit content and max out at 40% of the screen height
-  // TODO: Text to Speech (pipeline)
-  // TODO: Speech to Text (pipeline)
 
   let audio: HTMLAudioElement | undefined;
   let audioBuffer: Int16Array[] | undefined;
@@ -192,8 +189,18 @@
       inputElement.focus();
     };
 
+    const handleTriggerVoicePipeline = () => {
+      if (!audioRecorder?.active) startListening();
+    };
+
     window.addEventListener("blur", handleBlur);
     window.addEventListener("focus", handleFocus);
+    listen("focus", handleFocus);
+    window.addEventListener(
+      "trigger-voice-pipeline",
+      handleTriggerVoicePipeline
+    );
+    listen("trigger-voice-pipeline", handleTriggerVoicePipeline);
 
     return () => {
       window.removeEventListener("blur", handleBlur);

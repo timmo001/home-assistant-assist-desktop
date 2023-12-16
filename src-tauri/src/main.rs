@@ -169,6 +169,24 @@ fn toggle_window(window: tauri::Window) {
 }
 
 #[tauri::command]
+fn trigger_voice_pipeline(window: tauri::Window) {
+    if !window
+        .is_visible()
+        .expect("failed to check if the window is visible")
+    {
+        window.show().expect("failed to show the window");
+        window.set_focus().expect("failed to focus the window");
+        window
+            .emit("focus", {})
+            .expect("failed to emit focus event");
+    }
+
+    window
+        .emit("trigger-voice-pipeline", {})
+        .expect("failed to emit trigger-voice-pipeline event");
+}
+
+#[tauri::command]
 fn hide_window(window: tauri::Window) {
     window.hide().expect("failed to hide the window");
 }
@@ -233,15 +251,25 @@ fn main() {
             load_settings,
             update_settings,
             toggle_window,
+            trigger_voice_pipeline,
             hide_window,
             quit_application
         ])
         .setup(|app: &mut tauri::App| {
             let window = app.get_window("main").unwrap();
-
             app.global_shortcut_manager()
-                .register("Alt+A", move || toggle_window(window.clone()))
-                .expect("failed to register shortcut");
+                .register("Alt+A", move || {
+                    toggle_window(window.clone());
+                })
+                .expect("failed to register Alt+A shortcut");
+
+            let window = app.get_window("main").unwrap();
+            app.global_shortcut_manager()
+                .register("Alt+Shift+A", move || {
+                    trigger_voice_pipeline(window.clone());
+                })
+                .expect("failed to register Alt+Shift+A shortcut");
+
             Ok(())
         })
         .run(tauri::generate_context!())
