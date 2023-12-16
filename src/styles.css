@@ -78,13 +78,24 @@ hr {
 }
 
 .button-icon:active,
-.button-icon:hover {
+.button-icon:hover,
+.button-icon-active {
   background-color: rgba(82, 82, 82, 0.8);
   box-shadow: 0 0 0.2rem rgba(0, 0, 0, 0.2);
 }
 
 .button-icon:focus {
   outline: none;
+}
+
+.button-icon-disabled {
+  cursor: default;
+  background-color: transparent;
+  box-shadow: none;
+}
+
+.button-icon-disabled svg {
+  fill: rgba(248, 248, 248, 0.2);
 }
 
 .input-box {

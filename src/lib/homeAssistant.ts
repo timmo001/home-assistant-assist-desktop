@@ -8,21 +8,22 @@ import {
   getUser,
   subscribeConfig,
 } from "home-assistant-js-websocket";
-import { info } from "tauri-plugin-log-api";
+import { info, warn } from "tauri-plugin-log-api";
 
-import { type HomeAssistantSettings } from "./types/settings";
+import { type HomeAssistantSettings } from "../types/settings";
 import {
   type PipelineRun,
   type PipelineRunEvent,
   type PipelineRunOptions,
   type AssistPipeline,
   type AssistPipelineMutableParams,
-} from "./types/homeAssistantAssist";
+} from "../types/homeAssistantAssist";
 
 export class HomeAssistant {
+  public connection: Connection | null = null;
+
   private auth: Auth | null = null;
   private config: HomeAssistantSettings | null = null;
-  private connection: Connection | null = null;
   private connectedCallback: (connection: Connection, user: HassUser) => void;
   private configCallback: (config: HassConfig) => void;
 
@@ -106,8 +107,11 @@ export class HomeAssistant {
     }
 
     if (!run) {
-      // eslint-disable-next-line no-console
-      console.warn("Received unexpected event before receiving session", event);
+      warn(
+        `Received unexpected event before receiving session: ${JSON.stringify(
+          event
+        )}`
+      );
       return undefined;
     }
 

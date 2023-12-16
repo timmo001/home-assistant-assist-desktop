@@ -7,7 +7,7 @@
     type HassUser,
   } from "home-assistant-js-websocket";
   import { enable, disable } from "tauri-plugin-autostart-api";
-  import { attachConsole, info } from "tauri-plugin-log-api";
+  import { attachConsole, error, info } from "tauri-plugin-log-api";
 
   import {
     type AssistResponse,
@@ -18,7 +18,8 @@
     type AssistPipeline,
     type PipelineRunEvent,
   } from "../types/homeAssistantAssist";
-  import { HomeAssistant } from "../homeAssistant";
+  import { AudioRecorder } from "../lib/audioRecorder";
+  import { HomeAssistant } from "../lib/homeAssistant";
 
   // TODO: Resize window to fit content and max out at 40% of the screen height
   // TODO: Text to Speech (pipeline)
@@ -42,6 +43,7 @@
   let inputElement: HTMLInputElement;
   let outputElement: HTMLDivElement;
   let homeAssistantClient: HomeAssistant;
+  let homeAssistantPipeline: AssistPipeline | null;
   let homeAssistantPipelines: {
     pipelines: AssistPipeline[];
     preferred_pipeline: string | null;
@@ -49,6 +51,10 @@
   let homeAssistantConversationId: string | null;
   let currentPipeline: string | null;
   let showPipelineMenu = false;
+  let audio: HTMLAudioElement | undefined;
+  let audioRecorder: AudioRecorder | undefined;
+  let audioBuffer: Int16Array[] | undefined;
+  let sttBinaryHandlerId: number | null;
 
   function homeAssistantConnected(
     connection: Connection,
@@ -170,7 +176,7 @@
 
     const handleBlur = () => {
       info("Window lost focus");
-      invoke("hide_window").then(() => info("Window hidden"));
+      // invoke("hide_window").then(() => info("Window hidden"));
     };
 
     const handleFocus = () => {
@@ -192,18 +198,33 @@
     window.removeEventListener("keydown", handleKeydown);
   });
 
+  function playAudio(): void {
+    info("Playing audio..");
+    audio?.play();
+  }
+
+  function audioError(): void {
+    error(`Audio error: ${JSON.stringify({ audio })}`);
+    unloadAudio();
+  }
+
+  function unloadAudio(): void {
+    audio?.removeAttribute("src");
+    audio = undefined;
+  }
+
   async function callPipeline(): Promise<void> {
     // Disable input
     inputElement.disabled = true;
+
+    // Set responses
+    responses = [...responses, { type: AssistResponseType.User, text }];
 
     // Scroll to bottom
     outputElement.scroll({
       top: outputElement.scrollHeight,
       behavior: "smooth",
     });
-
-    // Set responses
-    responses = [...responses, { type: AssistResponseType.User, text }];
 
     // Call pipeline
     const unsub = await homeAssistantClient.runAssistPipeline(
@@ -257,13 +278,174 @@
     );
   }
 
-  async function callVoicePipeline(): Promise<void> {
+  async function startListening(): Promise<void> {
     // Clear input
     text = "";
+
     // Disable input
     inputElement.disabled = true;
 
+    // Scroll to bottom
+    outputElement.scroll({
+      top: outputElement.scrollHeight,
+      behavior: "smooth",
+    });
+
     // Call voice pipeline
+    audio?.pause();
+    if (!audioRecorder) {
+      audioRecorder = new AudioRecorder((audio) => {
+        if (audioBuffer) audioBuffer.push(audio);
+        else sendAudioChunk(audio);
+      });
+    }
+    sttBinaryHandlerId = null;
+    audioBuffer = [];
+    audioRecorder.start().then(() => {
+      responses = [
+        ...responses,
+        { type: AssistResponseType.User, text: "..." },
+      ];
+      // Scroll to bottom
+      outputElement.scroll({
+        top: outputElement.scrollHeight,
+        behavior: "smooth",
+      });
+    });
+    // To make sure the answer is placed at the right user text, we add it before we process it
+    try {
+      const unsub = await homeAssistantClient.runAssistPipeline(
+        {
+          start_stage: "stt",
+          end_stage: homeAssistantPipeline?.tts_engine ? "tts" : "intent",
+          input: { sample_rate: audioRecorder.sampleRate! },
+          pipeline: homeAssistantPipeline?.id,
+          conversation_id: homeAssistantConversationId,
+        },
+        (event) => {
+          if (event.type === "run-start") {
+            sttBinaryHandlerId = event.data.runner_data.stt_binary_handler_id;
+          }
+
+          // When we start STT stage, the WS has a binary handler
+          if (event.type === "stt-start" && audioBuffer) {
+            // Send the buffer over the WS to the STT engine.
+            for (const buffer of audioBuffer) {
+              sendAudioChunk(buffer);
+            }
+            audioBuffer = undefined;
+          }
+
+          // Stop recording if the server is done with STT stage
+          if (event.type === "stt-end") {
+            sttBinaryHandlerId = null;
+            stopListening();
+            // To make sure the answer is placed at the right user text, we add it before we process it
+            responses[responses.length - 1].text = event.data.stt_output.text;
+          }
+
+          if (event.type === "intent-end") {
+            homeAssistantConversationId =
+              event.data.intent_output.conversation_id;
+            const plain = event.data.intent_output.response.speech?.plain;
+            if (plain) {
+              responses = [
+                ...responses,
+                { type: AssistResponseType.Assist, text: plain.speech },
+              ];
+            }
+          }
+
+          if (event.type === "tts-end") {
+            const url = event.data.tts_output.url;
+            audio = new Audio(url);
+            audio.play();
+            audio.addEventListener("ended", unloadAudio);
+            audio.addEventListener("pause", unloadAudio);
+            audio.addEventListener("canplaythrough", playAudio);
+            audio.addEventListener("error", audioError);
+          }
+
+          if (event.type === "run-end") {
+            sttBinaryHandlerId = null;
+            if (unsub) unsub();
+          }
+
+          if (event.type === "error") {
+            sttBinaryHandlerId = null;
+            responses[responses.length - 1].text = event.data.message;
+            responses[responses.length - 1].type = AssistResponseType.Error;
+
+            stopListening();
+            if (unsub) unsub();
+          }
+
+          let scrollCount = 0;
+          const scrollInterval = setInterval(() => {
+            outputElement.scroll({
+              top: outputElement.scrollHeight,
+              behavior: "smooth",
+            });
+            scrollCount++;
+            if (scrollCount > 5) clearInterval(scrollInterval);
+          }, 100);
+
+          // Clear input
+          inputElement.disabled = false;
+          inputElement.focus();
+        }
+      );
+    } catch (err: any) {
+      error(`Error starting pipeline: ${JSON.stringify({ err })}`);
+      stopListening();
+    }
+  }
+
+  function stopListening(): void {
+    audioRecorder?.stop();
+    if (sttBinaryHandlerId) {
+      if (audioBuffer) {
+        for (const chunk of audioBuffer) {
+          sendAudioChunk(chunk);
+        }
+      }
+      // Send empty message to indicate we're done streaming.
+      sendAudioChunk(new Int16Array());
+      sttBinaryHandlerId = null;
+    }
+    audioBuffer = undefined;
+  }
+
+  function sendAudioChunk(chunk: Int16Array): void {
+    if (!homeAssistantClient.connection) {
+      error("Home Assistant connection not available");
+      return;
+    }
+    homeAssistantClient.connection.socket!.binaryType = "arraybuffer";
+
+    if (sttBinaryHandlerId == undefined) {
+      return;
+    }
+    // Turn into 8 bit so we can prefix our handler ID.
+    const data = new Uint8Array(1 + chunk.length * 2);
+    data[0] = sttBinaryHandlerId;
+    data.set(new Uint8Array(chunk.buffer), 1);
+
+    homeAssistantClient.connection.socket!.send(data);
+  }
+
+  function toggleListening(): void {
+    const supportsMicrophone = AudioRecorder.isSupported;
+    if (!supportsMicrophone) {
+      error("Microphone not supported");
+      responses = [
+        ...responses,
+        { type: AssistResponseType.Error, text: "Microphone not supported" },
+      ];
+      return;
+    }
+    if (!audioRecorder?.active) startListening();
+    else stopListening();
   }
 
   function togglePipelineMenu(): void {
@@ -298,7 +480,12 @@
       placeholder="Enter a request.."
     />
 
-    <button class="button-icon" on:click={callVoicePipeline}>
+    <button
+      class={`button-icon ${
+        AudioRecorder.isSupported ? "" : "button-icon-disabled"
+      } ${audioRecorder?.active ? "button-icon-active" : ""}`}
+      on:click={toggleListening}
+    >
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
         <title>microphone-outline</title>
         <path
