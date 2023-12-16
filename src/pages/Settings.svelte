@@ -115,4 +115,8 @@
   .button:hover {
     background-color: rgba(248, 248, 248, 0.8);
   }
+
+  .input-box input {
+    font-size: 1rem;
+  }
 </style>
