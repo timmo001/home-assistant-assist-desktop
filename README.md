@@ -11,7 +11,7 @@ You can find out more about Home Assistant Assist [here](https://www.home-assist
 - Speech to text
 - Text to speech
 - Pipeline picker
-- Toggle with keyboard shortcut (Alt + A)
+- Toggle with keyboard shortcuts - `Alt + A` to toggle window, `Alt + Shift + A` to trigger voice command
 
 ## Installation
 
