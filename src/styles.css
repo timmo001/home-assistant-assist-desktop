@@ -101,6 +101,15 @@ input {
   fill: rgba(248, 248, 248, 0.6);
 }
 
+.input-box span {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  justify-content: center;
+  width: 100%;
+  padding: 0 0.8rem;
+}
+
 .input-box input {
   outline: none;
   border: none;

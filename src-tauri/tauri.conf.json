@@ -43,7 +43,7 @@
       {
         "title": "Home Assistant Assist",
         "width": 640,
-        "height": 320,
+        "height": 340,
         "alwaysOnTop": true,
         "center": true,
         "decorations": false,

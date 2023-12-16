@@ -30,7 +30,7 @@
 <!-- TODO: Rework to use URL instead and extract host, port and ssl from this. -->
 <main>
   <div class="input-box">
-    Autostart
+    <span>Autostart</span>
     <input bind:checked={settings.autostart} class="input" type="checkbox" />
   </div>
   <div class="input-box">
@@ -60,33 +60,59 @@
       placeholder="Enter an access token"
     />
   </div>
-  Use SSL (This is required in production)
-  <input
-    bind:checked={settings.home_assistant.ssl}
-    class="input"
-    type="checkbox"
-  />
-  <!-- TODO: Style buttons -->
-  <button
-    class="button"
-    on:click={() => {
-      invoke("open_app");
-    }}
-  >
-    Cancel
-  </button>
-  <button
-    class="button"
-    on:click={() => {
-      invoke("update_settings", { settings }).then(() => {
-        info("Saved settings");
+  <div class="input-box">
+    <span>Use SSL (This is required in production)</span>
+    <input
+      bind:checked={settings.home_assistant.ssl}
+      class="input"
+      type="checkbox"
+    />
+  </div>
+  <div class="button-container">
+    <button
+      class="button"
+      on:click={() => {
         invoke("open_app");
-      });
-    }}
-  >
-    Save
-  </button>
+      }}
+    >
+      Cancel
+    </button>
+    <button
+      class="button"
+      on:click={() => {
+        invoke("update_settings", { settings }).then(() => {
+          info("Saved settings");
+          invoke("open_app");
+        });
+      }}
+    >
+      Save
+    </button>
+  </div>
 </main>
 
 <style>
+  .button-container {
+    width: 100%;
+    margin: 0.2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .button {
+    background-color: rgba(248, 248, 248, 0.9);
+    border: none;
+    color: rgb(28, 28, 28);
+    margin: 0.6rem;
+    padding: 0.6rem 1.2rem;
+    text-align: center;
+    text-decoration: none;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+
+  .button:hover {
+    background-color: rgba(248, 248, 248, 0.8);
+  }
 </style>
