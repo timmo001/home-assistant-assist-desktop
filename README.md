@@ -12,8 +12,11 @@ You can find out more about Home Assistant Assist [here](https://www.home-assist
 - Text to speech
 - Pipeline picker
 - Toggle with keyboard shortcuts
-    - `Alt + A` to toggle window
-    - `Alt + Shift + A` to trigger voice command
+  - `Alt + A` to toggle window
+  - `Alt + Shift + A` to trigger voice pipelines.
+- System tray icon
+  - `Left click` to toggle window
+  - `Right click` to open context menu
 
 ## Installation
 
