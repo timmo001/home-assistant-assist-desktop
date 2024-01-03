@@ -30,6 +30,12 @@ You can find out more about Home Assistant Assist [here](https://www.home-assist
 
 You can download the latest release from the [releases](https://github.com/timmo001/home-assistant-assist-desktop/releases) page.
 
+### Setup
+
+When you first run the app, you will be prompted to enter your Home Assistant URL and Long Lived Access Token. These are used to connect to your Home Assistant instance.
+
+> Your Home Assistant URL must be https due to [browser security restrictions](https://developer.mozilla.org/en-US/docs/Web/Security/Mixed_content).
+
 ## Development
 
 ### Prerequisites
