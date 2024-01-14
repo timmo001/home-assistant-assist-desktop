@@ -61,6 +61,13 @@
   }
 
   function saveSettings(): void {
+    if (home_assistant_url.startsWith("http:")) {
+      console.warn(
+        "Please provide a HTTPS URL for Home Assistant. HTTP is not supported."
+      );
+      return;
+    }
+
     if (home_assistant_url.endsWith("/")) {
       home_assistant_url = home_assistant_url.slice(0, -1);
     }
@@ -73,9 +80,7 @@
 
       settings.home_assistant.host = settings.home_assistant.host.split(":")[0];
     } else {
-      settings.home_assistant.port = home_assistant_url.startsWith("https")
-        ? 443
-        : 80;
+      settings.home_assistant.port = 443;
     }
     settings.home_assistant.ssl = home_assistant_url.startsWith("https");
     invoke("update_settings", { settings }).then(() => {
@@ -85,36 +90,47 @@
   }
 </script>
 
-<main>
-  <div class="input-box">
-    <span>Autostart</span>
-    <input bind:checked={settings.autostart} class="input" type="checkbox" />
-  </div>
-  <div class="input-box">
-    <span>Home Assistant URL</span>
-    <input
-      bind:value={home_assistant_url}
-      autocomplete="off"
-      class="input"
-      type="text"
-      placeholder="Enter a host"
-      on:change={validate}
-    />
-  </div>
-  <div class="input-box">
-    <span>Home Assistant Token</span>
-    <input
-      bind:value={settings.home_assistant.access_token}
-      autocomplete="off"
-      class="input"
-      type="text"
-      placeholder="Enter an access token"
-      on:change={validate}
-    />
-  </div>
-  <div class="button-container">
+<main class="scrollable">
+  <section>
+    <h2>General</h2>
+    <div class="input-box">
+      <span>Autostart</span>
+      <input bind:checked={settings.autostart} class="input" type="checkbox" />
+    </div>
+  </section>
+  <section>
+    <h2>Home Assistant</h2>
+    <span>
+      Please enter the <b>HTTPS</b> URL of your Home Assistant instance and a Long-lived
+      access token. You can create a Long-lived access token in your Home Assistant
+      profile.
+    </span>
+    <div class="input-box">
+      <span>Home Assistant URL</span>
+      <input
+        bind:value={home_assistant_url}
+        autocomplete="off"
+        class="input"
+        type="text"
+        placeholder="Enter a host"
+        on:change={validate}
+      />
+    </div>
+    <div class="input-box">
+      <span>Home Assistant Token</span>
+      <input
+        bind:value={settings.home_assistant.access_token}
+        autocomplete="off"
+        class="input"
+        type="text"
+        placeholder="Enter an access token"
+        on:change={validate}
+      />
+    </div>
+  </section>
+  <section class="button-container">
     <button
-      class="button"
+      class="button button-enabled"
       on:click={() => {
         invoke("open_app");
       }}
@@ -128,7 +144,7 @@
     >
       Save
     </button>
-  </div>
+  </section>
 </main>
 
 <style>
@@ -137,6 +153,7 @@
     width: 100%;
     margin: 0.2rem;
     display: inline-flex;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
   }
@@ -151,6 +168,10 @@
     text-decoration: none;
     font-size: 1rem;
     cursor: pointer;
+  }
+
+  .button-enabled {
+    background-color: rgba(248, 248, 248, 1);
   }
 
   .button-enabled:hover {
