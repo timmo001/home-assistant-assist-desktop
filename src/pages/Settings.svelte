@@ -157,6 +157,10 @@
     background-color: rgba(248, 248, 248, 0.9);
   }
 
+  .input-box {
+    min-height: 42px;
+  }
+
   .input-box input {
     font-size: 1rem;
   }
