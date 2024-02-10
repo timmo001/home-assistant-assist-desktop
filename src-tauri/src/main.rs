@@ -39,6 +39,20 @@ impl From<serde_json::Error> for CommandError {
     }
 }
 
+fn show_window_app(window: tauri::Window) {
+    log::info!("Showing window...");
+    let url = window.url().to_string();
+    if url.contains("settings") {
+        open_app(window);
+        return;
+    }
+    window.show().expect("failed to show the window");
+    window.set_focus().expect("failed to focus the window");
+    window
+        .emit("focus", {})
+        .expect("failed to emit focus event");
+}
+
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
 fn open_app(window: tauri::Window) {
@@ -155,16 +169,7 @@ fn toggle_window(window: tauri::Window) {
     {
         window.hide().expect("failed to hide the window");
     } else {
-        let url = window.url().to_string();
-        if url.contains("settings") {
-            open_app(window);
-            return;
-        }
-        window.show().expect("failed to show the window");
-        window.set_focus().expect("failed to focus the window");
-        window
-            .emit("focus", {})
-            .expect("failed to emit focus event");
+        show_window_app(window.clone());
     }
 }
 
@@ -174,13 +179,10 @@ fn trigger_voice_pipeline(window: tauri::Window) {
         .is_visible()
         .expect("failed to check if the window is visible")
     {
-        window.show().expect("failed to show the window");
-        window.set_focus().expect("failed to focus the window");
-        window
-            .emit("focus", {})
-            .expect("failed to emit focus event");
+        show_window_app(window.clone());
     }
 
+    log::info!("Triggering voice pipeline...");
     window
         .emit("trigger-voice-pipeline", {})
         .expect("failed to emit trigger-voice-pipeline event");
@@ -225,7 +227,10 @@ fn main() {
         ))
         .add_native_item(SystemTrayMenuItem::Separator)
         .add_item(CustomMenuItem::new("open_settings".to_string(), "Settings"))
-        .add_item(CustomMenuItem::new("open_logs_directory".to_string(), "Open Logs"))
+        .add_item(CustomMenuItem::new(
+            "open_logs_directory".to_string(),
+            "Open Logs",
+        ))
         .add_native_item(SystemTrayMenuItem::Separator)
         .add_item(CustomMenuItem::new("quit_application".to_string(), "Quit"));
 
