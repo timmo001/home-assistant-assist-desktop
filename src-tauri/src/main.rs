@@ -249,6 +249,10 @@ fn main() {
         .system_tray(SystemTray::new().with_menu(tray_menu))
         .on_system_tray_event(
             |app: &tauri::AppHandle, event: tauri::SystemTrayEvent| match event {
+                tauri::SystemTrayEvent::DoubleClick { .. } => {
+                    let window: tauri::Window = app.get_window("main").unwrap();
+                    toggle_window(window);
+                }
                 tauri::SystemTrayEvent::MenuItemClick { id, .. } => {
                     let window: tauri::Window = app.get_window("main").unwrap();
                     match id.as_str() {
