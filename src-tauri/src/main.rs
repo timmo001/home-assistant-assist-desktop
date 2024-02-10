@@ -219,6 +219,10 @@ fn main() {
             "toggle_window".to_string(),
             "Show/Hide Window (Alt+A)",
         ))
+        .add_item(CustomMenuItem::new(
+            "trigger_voice_pipeline".to_string(),
+            "Trigger Voice Pipeline (Alt+Shift+A)",
+        ))
         .add_native_item(SystemTrayMenuItem::Separator)
         .add_item(CustomMenuItem::new("open_settings".to_string(), "Settings"))
         .add_item(CustomMenuItem::new("open_logs_directory".to_string(), "Open Logs"))
@@ -249,6 +253,7 @@ fn main() {
                     let window: tauri::Window = app.get_window("main").unwrap();
                     match id.as_str() {
                         "toggle_window" => toggle_window(window),
+                        "trigger_voice_pipeline" => trigger_voice_pipeline(window),
                         "open_settings" => open_settings(window),
                         "open_logs_directory" => open_logs_directory(app.clone()),
                         "quit_application" => quit_application(window),
