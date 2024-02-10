@@ -219,9 +219,16 @@ fn main() {
             "toggle_window".to_string(),
             "Show/Hide Window (Alt+A)",
         ))
+        .add_item(CustomMenuItem::new(
+            "trigger_voice_pipeline".to_string(),
+            "Trigger Voice Pipeline (Alt+Shift+A)",
+        ))
         .add_native_item(SystemTrayMenuItem::Separator)
         .add_item(CustomMenuItem::new("open_settings".to_string(), "Settings"))
-        .add_item(CustomMenuItem::new("open_logs_directory".to_string(), "Open Logs"))
+        .add_item(CustomMenuItem::new(
+            "open_logs_directory".to_string(),
+            "Open Logs",
+        ))
         .add_native_item(SystemTrayMenuItem::Separator)
         .add_item(CustomMenuItem::new("quit_application".to_string(), "Quit"));
 
