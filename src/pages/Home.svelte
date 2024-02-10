@@ -255,7 +255,7 @@
       {
         start_stage: "intent",
         input: { text },
-        end_stage: "intent",
+        end_stage: homeAssistantCurrentPipeline?.tts_engine ? "tts" : "intent",
         pipeline:
           homeAssistantCurrentPipeline?.id ||
           homeAssistantPipelines.preferred_pipeline ||
@@ -282,6 +282,19 @@
             { type: AssistResponseType.Error, text: event.data.message },
           ];
           if (unsub) unsub();
+        }
+
+        if (event.type === "tts-end") {
+          const url = `${generateHomeAssistantURLFromSettings(
+            settings.home_assistant
+          )}${event.data.tts_output.url}`;
+          audio = new Audio(url);
+          info(`Playing audio: ${url}`);
+          audio.play();
+          audio.addEventListener("ended", unloadAudio);
+          audio.addEventListener("pause", unloadAudio);
+          audio.addEventListener("canplaythrough", playAudio);
+          audio.addEventListener("error", audioError);
         }
 
         let scrollCount = 0;
