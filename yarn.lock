@@ -908,8 +908,8 @@ svelte@4.2.12:
 
 "tauri-plugin-log-api@https://github.com/tauri-apps/tauri-plugin-log#v1":
   version "0.0.0"
-  uid c4148c3d3085de8c78e416139fba4cfefeea48f4
-  resolved "https://github.com/tauri-apps/tauri-plugin-log#c4148c3d3085de8c78e416139fba4cfefeea48f4"
+  uid db7255ca2e07fc4d3e6cc5d93f9ccfceacb28901
+  resolved "https://github.com/tauri-apps/tauri-plugin-log#db7255ca2e07fc4d3e6cc5d93f9ccfceacb28901"
   dependencies:
     "@tauri-apps/api" "1.5.3"
 
