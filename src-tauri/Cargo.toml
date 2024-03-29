@@ -21,7 +21,7 @@ serde_json = "1.0"
 dirs = "5.0.1"
 global-hotkey = "0.5.1"
 log = "^0.4"
-tokio = "1.36.0"
+tokio = "1.37.0"
 url = "2.5.0"
 opener = "0.7.0"
 
