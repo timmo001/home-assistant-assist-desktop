@@ -22,6 +22,9 @@
     },
     "bundle": {
       "active": true,
+      "appimage": {
+        "bundleMediaFramework": true
+      },
       "targets": "all",
       "identifier": "dev.timmo.home-assistant-assist-desktop",
       "icon": [
