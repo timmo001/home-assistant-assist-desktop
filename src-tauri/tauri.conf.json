@@ -25,6 +25,7 @@
       "appimage": {
         "bundleMediaFramework": true
       },
+      "category": "Utility",
       "targets": "all",
       "identifier": "dev.timmo.home-assistant-assist-desktop",
       "icon": [
@@ -33,7 +34,8 @@
         "icons/128x128@2x.png",
         "icons/icon.icns",
         "icons/icon.ico"
-      ]
+      ],
+      "shortDescription": "This is a desktop app for Home Assistant Assist."
     },
     "security": {
       "csp": null
