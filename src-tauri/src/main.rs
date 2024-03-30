@@ -168,6 +168,7 @@ fn toggle_window(window: tauri::Window) {
         .expect("failed to check if the window is visible");
     println!("Window visible: {}", window_visible);
     if window_visible {
+        println!("Hiding window...");
         window.hide().expect("failed to hide the window");
     } else {
         show_window_app(window.clone());
