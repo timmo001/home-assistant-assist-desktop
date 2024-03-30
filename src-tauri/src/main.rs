@@ -163,10 +163,11 @@ fn update_settings(app_handle: tauri::AppHandle, settings: Settings) -> Result<(
 
 #[tauri::command]
 fn toggle_window(window: tauri::Window) {
-    if window
+    let window_visible = window
         .is_visible()
-        .expect("failed to check if the window is visible")
-    {
+        .expect("failed to check if the window is visible");
+    println!("Window visible: {}", window_visible);
+    if window_visible {
         window.hide().expect("failed to hide the window");
     } else {
         show_window_app(window.clone());
