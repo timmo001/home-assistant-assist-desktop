@@ -18,7 +18,7 @@
     "tauri-plugin-log-api": "https://github.com/tauri-apps/tauri-plugin-log#v1"
   },
   "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "3.0.2",
+    "@sveltejs/vite-plugin-svelte": "3.1.0",
     "@tauri-apps/cli": "1.5.11",
     "@tsconfig/svelte": "5.0.4",
     "svelte": "4.2.13",
