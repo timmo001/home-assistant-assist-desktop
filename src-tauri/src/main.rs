@@ -221,7 +221,7 @@ fn main() {
     let tray_menu: SystemTrayMenu = SystemTrayMenu::new()
         .add_item(CustomMenuItem::new(
             "toggle_window".to_string(),
-            "Show/Hide Window (Alt+A)",
+            "Show/Hide Window (Ctrl+Alt+A)",
         ))
         .add_item(CustomMenuItem::new(
             "trigger_voice_pipeline".to_string(),
@@ -288,10 +288,10 @@ fn main() {
         .setup(|app: &mut tauri::App| {
             let window = app.get_window("main").unwrap();
             app.global_shortcut_manager()
-                .register("Alt+A", move || {
+                .register("Ctrl+Alt+A", move || {
                     toggle_window(window.clone());
                 })
-                .expect("failed to register Alt+A shortcut");
+                .expect("failed to register Ctrl+Alt+A shortcut");
 
             let window = app.get_window("main").unwrap();
             app.global_shortcut_manager()
