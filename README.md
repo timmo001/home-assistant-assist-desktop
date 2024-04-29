@@ -18,7 +18,7 @@ You can find out more about Home Assistant Assist [here](https://www.home-assist
 - Text to speech
 - Assist pipeline picker via Assist icon in main window
 - Toggle with keyboard shortcuts
-  - `Alt + A` to toggle main window
+  - `Ctrl + Alt + A` to toggle main window
   - `Alt + Shift + A` to trigger voice pipeline
 - System tray icon
   - Double click to toggle main window
