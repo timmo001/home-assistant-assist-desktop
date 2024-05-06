@@ -198,7 +198,6 @@
       if (!audioRecorder?.active) startListening();
     };
 
-    window.addEventListener("blur", handleBlur);
     window.addEventListener("focus", handleFocus);
     listen("focus", handleFocus);
     window.addEventListener(
@@ -208,7 +207,6 @@
     listen("trigger-voice-pipeline", handleTriggerVoicePipeline);
 
     return () => {
-      window.removeEventListener("blur", handleBlur);
       window.removeEventListener("focus", handleFocus);
     };
   });
