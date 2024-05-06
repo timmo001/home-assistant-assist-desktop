@@ -93,11 +93,14 @@
     await homeAssistantClient.connect();
   }
 
-  function handleKeypress(event: KeyboardEvent): void {
+  function handleKeydown(event: KeyboardEvent): void {
     switch (event.key) {
       case "ArrowUp":
         if (responses.length === 0) return;
-        if (!inputElement.selectionStart || inputElement.selectionStart > 0)
+        if (
+          inputElement.selectionStart === null ||
+          inputElement.selectionStart > 0
+        )
           return;
 
         const userResponsesUp = responses.filter(
@@ -116,7 +119,7 @@
       case "ArrowDown":
         if (responses.length === 0) return;
         if (
-          !inputElement.selectionStart ||
+          inputElement.selectionStart === null ||
           inputElement.selectionStart < text.length
         )
           return;
@@ -522,9 +525,10 @@
       bind:value={text}
       class="input"
       id="text"
-      type="text"
       placeholder="Enter a request.."
-      on:keypress={handleKeypress}
+      tabindex="0"
+      type="text"
+      on:keydown={handleKeydown}
     />
 
     <button
