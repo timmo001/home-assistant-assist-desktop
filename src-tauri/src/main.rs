@@ -24,6 +24,8 @@ struct HomeAssistantSettings {
 struct Settings {
     autostart: bool,
     home_assistant: HomeAssistantSettings,
+    tray_click_action: Option<String>,
+    tray_double_click_action: Option<String>,
 }
 
 #[derive(Debug, Serialize)]
@@ -128,6 +130,8 @@ fn load_settings(app_handle: tauri::AppHandle) -> Result<Settings, CommandError>
                 port: 8123,
                 ssl: false,
             },
+            tray_click_action: Some("toggle_window".to_string()),
+            tray_double_click_action: Some("trigger_voice_pipeline".to_string()),
         };
         // Serialize the Settings struct into JSON.
         serde_json::to_writer_pretty(file, &settings).unwrap();
@@ -256,9 +260,45 @@ fn main() {
         .system_tray(SystemTray::new().with_menu(tray_menu))
         .on_system_tray_event(
             |app: &tauri::AppHandle, event: tauri::SystemTrayEvent| match event {
-                tauri::SystemTrayEvent::DoubleClick { .. } => {
+                tauri::SystemTrayEvent::LeftClick { .. } => {
+                    let settings = load_settings(app.clone()).unwrap();
+
+                    let action = if Some(settings.tray_click_action.clone()) != None {
+                        settings.tray_click_action.unwrap()
+                    } else {
+                        "toggle_window".to_string()
+                    };
+
                     let window: tauri::Window = app.get_window("main").unwrap();
-                    toggle_window(window);
+                    match action.as_str() {
+                        "toggle_window" => {
+                            toggle_window(window);
+                        }
+                        "trigger_voice_pipeline" => {
+                            trigger_voice_pipeline(window);
+                        }
+                        _ => {}
+                    }
+                }
+                tauri::SystemTrayEvent::DoubleClick { .. } => {
+                    let settings = load_settings(app.clone()).unwrap();
+
+                    let action = if Some(settings.tray_double_click_action.clone()) != None {
+                        settings.tray_double_click_action.unwrap()
+                    } else {
+                        "trigger_voice_pipeline".to_string()
+                    };
+
+                    let window: tauri::Window = app.get_window("main").unwrap();
+                    match action.as_str() {
+                        "toggle_window" => {
+                            toggle_window(window);
+                        }
+                        "trigger_voice_pipeline" => {
+                            trigger_voice_pipeline(window);
+                        }
+                        _ => {}
+                    }
                 }
                 tauri::SystemTrayEvent::MenuItemClick { id, .. } => {
                     let window: tauri::Window = app.get_window("main").unwrap();
