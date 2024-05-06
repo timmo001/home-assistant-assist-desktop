@@ -144,7 +144,13 @@ fn load_settings(app_handle: tauri::AppHandle) -> Result<Settings, CommandError>
     // Open the file in read-only mode.
     let file: File = File::open(path).unwrap();
     // Read the JSON contents of the file as an instance of `Settings`.
-    let settings: Settings = serde_json::from_reader(file)?;
+    let mut settings: Settings = serde_json::from_reader(file)?;
+
+    if settings.tray.is_none() {
+        settings.tray = Some(TraySettings {
+            double_click_action: "toggle_window".to_string(),
+        });
+    }
 
     Ok(settings)
 }

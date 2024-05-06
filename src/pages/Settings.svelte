@@ -16,6 +16,9 @@
       port: 8123,
       ssl: true,
     },
+    tray: {
+      double_click_action: "toggle_window",
+    },
   };
   let home_assistant_url = "";
   let saveDisabled = true;
@@ -24,7 +27,8 @@
     attachConsole().then(() => info("Attached console"));
 
     invoke("load_settings").then((result: unknown) => {
-      settings = result as Settings;
+      let new_settings = result as Partial<Settings>;
+      settings = { ...settings, ...new_settings };
       info(`Loaded settings: ${JSON.stringify({ settings })}`);
       home_assistant_url = generateHomeAssistantURLFromSettings(
         settings.home_assistant
@@ -126,6 +130,16 @@
         placeholder="Enter an access token"
         on:change={validate}
       />
+    </div>
+  </section>
+  <section>
+    <h2>Tray</h2>
+    <div class="input-box">
+      <span>Double Click Action</span>
+      <select class="input" bind:value={settings.tray.double_click_action}>
+        <option value="toggle_window">Toggle Window</option>
+        <option value="trigger_voice_pipeline">Trigger Voice Pipeline</option>
+      </select>
     </div>
   </section>
   <section class="button-container">
