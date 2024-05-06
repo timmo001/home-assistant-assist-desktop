@@ -1,6 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use opener::open_browser;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use tauri::GlobalShortcutManager;
@@ -234,6 +235,11 @@ fn main() {
             "Open Logs",
         ))
         .add_native_item(SystemTrayMenuItem::Separator)
+        .add_item(CustomMenuItem::new(
+            "check_for_updates".to_string(),
+            format!("Check for Updates ({})", env!("CARGO_PKG_VERSION")),
+        ))
+        .add_native_item(SystemTrayMenuItem::Separator)
         .add_item(CustomMenuItem::new("quit_application".to_string(), "Quit"));
 
     tauri::Builder::default()
@@ -267,6 +273,10 @@ fn main() {
                         "trigger_voice_pipeline" => trigger_voice_pipeline(window),
                         "open_settings" => open_settings(window),
                         "open_logs_directory" => open_logs_directory(app.clone()),
+                        "check_for_updates" => open_browser(
+                            "https://github.com/timmo001/home-assistant-assist-desktop/releases",
+                        )
+                        .unwrap(),
                         "quit_application" => quit_application(window),
                         _ => {}
                     }
