@@ -93,7 +93,7 @@
     await homeAssistantClient.connect();
   }
 
-  function handleKeydown(event: KeyboardEvent): void {
+  function handleKeypress(event: KeyboardEvent): void {
     switch (event.key) {
       case "ArrowUp":
         if (responses.length === 0) return;
@@ -165,7 +165,6 @@
 
       setupHomeAssistantConnection().then(() => {
         inputElement.focus();
-        window.addEventListener("keydown", handleKeydown);
       });
 
       if (isProduction) {
@@ -209,10 +208,6 @@
     return () => {
       window.removeEventListener("focus", handleFocus);
     };
-  });
-
-  onDestroy(() => {
-    window.removeEventListener("keydown", handleKeydown);
   });
 
   function playAudio(): void {
@@ -529,6 +524,7 @@
       id="text"
       type="text"
       placeholder="Enter a request.."
+      on:keypress={handleKeypress}
     />
 
     <button
