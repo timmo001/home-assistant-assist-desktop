@@ -268,10 +268,10 @@
   resolved "https://registry.yarnpkg.com/@tauri-apps/api/-/api-1.5.3.tgz#f7b362b1f30aadb0a8bbeb7ae111755c0ed33d73"
   integrity sha512-zxnDjHHKjOsrIzZm6nO5Xapb/BxqUq1tc7cGkFXsFkGTsSWgCPH1D8mm0XS9weJY2OaR73I3k3S+b7eSzJDfqA==
 
-"@tauri-apps/api@1.5.4":
-  version "1.5.4"
-  resolved "https://registry.yarnpkg.com/@tauri-apps/api/-/api-1.5.4.tgz#69bf7f93abe7b00d69c313016a6c1d0d59dca5cd"
-  integrity sha512-LKYae9URbdEdbHrOXBeXb/lZgVyWTX0E98rSFBuQlmkLr8OeG+akuE41PfLjBVyk1Q+fq7wxo4ieenLSMUAUhA==
+"@tauri-apps/api@1.5.5":
+  version "1.5.5"
+  resolved "https://registry.yarnpkg.com/@tauri-apps/api/-/api-1.5.5.tgz#6ecc147e565912648d2de862d8c495cc7c705693"
+  integrity sha512-Jgwj8BK/9YXZNzcqVDk1Al7+u5V9sWrZ8MhV41A1AKgJaicHuqlkc/qdx06sNDXvc+qprTPpBAaqnt891qOUIQ==
 
 "@tauri-apps/cli-darwin-arm64@1.5.13":
   version "1.5.13"
