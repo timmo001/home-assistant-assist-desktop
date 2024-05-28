@@ -19,7 +19,7 @@ tauri-plugin-log = { git = "https://github.com/tauri-apps/plugins-workspace", br
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 dirs = "5.0.1"
-global-hotkey = "0.5.3"
+global-hotkey = "0.5.4"
 log = "^0.4"
 tokio = "1.37.0"
 url = "2.5.0"
