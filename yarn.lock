@@ -914,8 +914,8 @@ svelte@4.2.17:
 
 "tauri-plugin-autostart-api@https://github.com/tauri-apps/tauri-plugin-autostart#v1":
   version "0.0.0"
-  uid e9097737689eba40cc00c04d6a50f2b40dec3e2e
-  resolved "https://github.com/tauri-apps/tauri-plugin-autostart#e9097737689eba40cc00c04d6a50f2b40dec3e2e"
+  uid "95dbee4b9e1209cbbea17c77d197b267fa7fe8d9"
+  resolved "https://github.com/tauri-apps/tauri-plugin-autostart#95dbee4b9e1209cbbea17c77d197b267fa7fe8d9"
   dependencies:
     "@tauri-apps/api" "1.5.6"
 
