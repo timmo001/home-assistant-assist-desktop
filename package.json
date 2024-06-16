@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@tauri-apps/api": "1.5.6",
-    "home-assistant-js-websocket": "9.3.0",
+    "home-assistant-js-websocket": "9.4.0",
     "svelte-routing": "2.13.0",
     "tauri-plugin-autostart-api": "https://github.com/tauri-apps/tauri-plugin-autostart#v1",
     "tauri-plugin-log-api": "https://github.com/tauri-apps/tauri-plugin-log#v1"
@@ -25,6 +25,7 @@
     "svelte-check": "3.8.0",
     "tslib": "2.6.3",
     "typescript": "5.4.5",
-    "vite": "5.3.0"
-  }
+    "vite": "5.3.1"
+  },
+  "packageManager": "yarn@1.22.19+sha1.4ba7fc5c6e704fce2066ecbfb0b0d8976fe62447"
 }
