@@ -48,7 +48,7 @@ jobs:
       - name: Install frontend dependencies
         run: bun install
       - name: Build the app
-        uses: tauri-apps/tauri-action@v0.5.6
+        uses: tauri-apps/tauri-action@v0.5.14
       - name: Publish artifacts
         uses: actions/upload-artifact@v4.3.3
         with:
