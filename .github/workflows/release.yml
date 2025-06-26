@@ -36,7 +36,7 @@ jobs:
       - name: Rust setup
         uses: dtolnay/rust-toolchain@stable
       - name: Rust cache
-        uses: swatinem/rust-cache@v2.7.3
+        uses: swatinem/rust-cache@v2.8.0
         with:
           workspaces: "./src-tauri -> target"
       - name: Setup Bun
