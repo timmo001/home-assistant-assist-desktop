@@ -22,7 +22,7 @@ dirs = "5.0.1"
 global-hotkey = "0.5.4"
 log = "^0.4"
 tokio = "1.38.0"
-url = "2.5.2"
+url = "2.5.7"
 opener = "0.7.1"
 
 [features]
