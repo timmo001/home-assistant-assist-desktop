@@ -25,7 +25,7 @@
     "svelte-check": "3.8.4",
     "tslib": "2.6.3",
     "typescript": "5.5.2",
-    "vite": "5.4.12"
+    "vite": "5.4.20"
   },
   "packageManager": "yarn@1.22.19+sha1.4ba7fc5c6e704fce2066ecbfb0b0d8976fe62447"
 }
