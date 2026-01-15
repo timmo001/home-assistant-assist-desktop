@@ -404,6 +404,22 @@ export class AssistChat extends LitElement {
         textarea.addEventListener('keydown', (e: KeyboardEvent) => this.handleKeyDown(e));
       }
     }
+    
+    // Scroll to bottom on initial load (in case there are existing messages)
+    this.scrollToBottom();
+    
+    // Focus textarea on initial load
+    this.focusTextarea();
+  }
+
+  updated(changedProperties: Map<string, any>) {
+    super.updated(changedProperties);
+    
+    // Auto-scroll when messages change
+    if (changedProperties.has('messages') || changedProperties.has('isLoading')) {
+      // Give the DOM time to fully render
+      setTimeout(() => this.scrollToBottom(), 50);
+    }
   }
 
   /**
@@ -477,8 +493,31 @@ export class AssistChat extends LitElement {
    * Scroll to bottom of messages
    */
   private scrollToBottom() {
-    if (this.messagesContainer) {
-      this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+    // Multiple attempts to ensure scroll happens after all rendering
+    const doScroll = () => {
+      if (this.messagesContainer) {
+        const container = this.messagesContainer;
+        container.scrollTop = container.scrollHeight - container.clientHeight;
+      }
+    };
+    
+    // Try immediately
+    doScroll();
+    
+    // Try again after a short delay to catch any late renders
+    setTimeout(doScroll, 10);
+    setTimeout(doScroll, 50);
+  }
+
+  /**
+   * Focus the textarea input
+   */
+  private focusTextarea() {
+    if (this.textareaElement) {
+      const textarea = this.textareaElement.shadowRoot?.querySelector('textarea');
+      if (textarea) {
+        textarea.focus();
+      }
     }
   }
 
@@ -539,6 +578,10 @@ export class AssistChat extends LitElement {
     } catch (error) {
       this.addSystemMessage(`Error executing command: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
     }
+    
+    // Keep focus on textarea
+    await this.updateComplete;
+    this.focusTextarea();
   }
 
   private addSystemMessage(content: string, type: 'info' | 'success' | 'error' = 'info') {
@@ -618,6 +661,7 @@ export class AssistChat extends LitElement {
     if (this.inputValue.startsWith('/')) {
       this.addSystemMessage('Unknown command. Type /help for available commands.', 'error');
       this.inputValue = '';
+      this.focusTextarea();
       return;
     }
 
@@ -636,6 +680,9 @@ export class AssistChat extends LitElement {
     this.saveHistory();
     await this.updateComplete;
     this.scrollToBottom();
+    
+    // Keep focus on textarea after sending
+    this.focusTextarea();
 
     // Execute pipeline
     this.isLoading = true;
@@ -698,6 +745,9 @@ export class AssistChat extends LitElement {
       this.isLoading = false;
       await this.updateComplete;
       this.scrollToBottom();
+      
+      // Keep focus on textarea after response
+      this.focusTextarea();
     }
   }
 
