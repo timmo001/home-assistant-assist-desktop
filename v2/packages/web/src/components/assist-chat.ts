@@ -3,6 +3,9 @@ import { customElement, state, query } from 'lit/decorators.js';
 import { backendClient } from '../lib/backend-client';
 import { storage, type StoredMessage } from '../lib/storage';
 import './message-bubble';
+import '../elements/ha-button';
+import '../elements/ha-textarea';
+import '@awesome.me/webawesome/dist/components/spinner/spinner.js';
 
 interface Message {
   id: string;
@@ -24,88 +27,10 @@ export class AssistChat extends LitElement {
     .messages {
       flex: 1;
       overflow-y: auto;
-      padding: var(--spacing-md);
+      padding: var(--ha-space-4);
       display: flex;
       flex-direction: column;
-      gap: var(--spacing-md);
-    }
-
-    .messages::-webkit-scrollbar {
-      width: 8px;
-    }
-
-    .messages::-webkit-scrollbar-track {
-      background: var(--color-background);
-    }
-
-    .messages::-webkit-scrollbar-thumb {
-      background: var(--color-border);
-      border-radius: var(--radius-sm);
-    }
-
-    .input-container {
-      display: flex;
-      gap: var(--spacing-sm);
-      padding: var(--spacing-md);
-      background-color: var(--color-surface);
-      border-top: 1px solid var(--color-border);
-      align-items: flex-end;
-    }
-
-    .input-field {
-      flex: 1;
-      padding: var(--spacing-sm) var(--spacing-md);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-md);
-      background-color: var(--color-background);
-      font-size: var(--font-size-base);
-      font-family: inherit;
-      resize: vertical;
-      min-height: 42px;
-      max-height: 150px;
-    }
-
-    .input-field:focus {
-      outline: none;
-      border-color: var(--color-primary);
-    }
-
-    .input-field:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .button {
-      padding: var(--spacing-sm) var(--spacing-lg);
-      background-color: var(--color-primary);
-      color: white;
-      border-radius: var(--radius-md);
-      font-weight: 600;
-      transition: background-color var(--transition-fast);
-      cursor: pointer;
-      white-space: nowrap;
-    }
-
-    .button:hover:not(:disabled) {
-      background-color: var(--color-primary-dark);
-    }
-
-    .button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .button.secondary {
-      background-color: transparent;
-      color: var(--color-text-secondary);
-      border: 1px solid var(--color-border);
-      padding: var(--spacing-xs) var(--spacing-sm);
-      font-size: var(--font-size-sm);
-    }
-
-    .button.secondary:hover:not(:disabled) {
-      background-color: var(--color-surface);
-      color: var(--color-text);
+      gap: var(--ha-space-4);
     }
 
     .empty-state {
@@ -114,64 +39,66 @@ export class AssistChat extends LitElement {
       align-items: center;
       justify-content: center;
       height: 100%;
-      color: var(--color-text-secondary);
+      color: var(--ha-color-text-secondary);
       text-align: center;
-      padding: var(--spacing-xl);
-      gap: var(--spacing-md);
+      padding: var(--ha-space-8);
+      gap: var(--ha-space-4);
     }
 
     .empty-state h2 {
       margin: 0;
-      color: var(--color-text);
+      font-size: var(--ha-font-size-xl);
+      font-weight: var(--ha-font-weight-medium);
+      color: var(--ha-color-text);
     }
 
     .empty-state p {
       margin: 0;
       max-width: 400px;
+      font-size: var(--ha-font-size-base);
+    }
+
+    .input-container {
+      display: flex;
+      gap: var(--ha-space-3);
+      padding: var(--ha-space-4);
+      background-color: var(--ha-color-surface);
+      border-top: 1px solid var(--ha-color-border);
+      align-items: flex-end;
+    }
+
+    ha-textarea {
+      flex: 1;
+      --wa-input-height-medium: auto;
+    }
+
+    ha-textarea::part(base) {
+      min-height: 42px;
+      max-height: 150px;
     }
 
     .thinking-indicator {
       display: flex;
       align-items: center;
-      gap: var(--spacing-sm);
-      padding: var(--spacing-md);
-      background-color: var(--color-surface);
-      border-radius: var(--radius-md);
-      color: var(--color-text-secondary);
-      animation: pulse 1.5s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.6; }
-    }
-
-    .spinner {
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      border: 2px solid var(--color-border);
-      border-top-color: var(--color-primary);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+      gap: var(--ha-space-3);
+      padding: var(--ha-space-4);
+      background-color: var(--ha-color-surface);
+      border-radius: var(--ha-border-radius-md);
+      color: var(--ha-color-text-secondary);
     }
 
     .actions-bar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: var(--spacing-sm) var(--spacing-md);
-      background-color: var(--color-surface);
-      border-bottom: 1px solid var(--color-border);
+      padding: var(--ha-space-3) var(--ha-space-4);
+      background-color: var(--ha-color-surface);
+      border-bottom: 1px solid var(--ha-color-border);
     }
 
     .actions-bar-left {
       display: flex;
-      gap: var(--spacing-sm);
+      gap: var(--ha-space-3);
     }
   `;
 
@@ -190,6 +117,9 @@ export class AssistChat extends LitElement {
   @state()
   private pipelineId: string | null = null;
 
+  @state()
+  private pipelineName: string | null = null;
+
   @query('.messages')
   private messagesContainer!: HTMLElement;
 
@@ -200,20 +130,53 @@ export class AssistChat extends LitElement {
   }
 
   /**
-   * Load available pipelines and select the first one (or preferred)
+   * Load pipeline from settings or auto-select
    */
   private async loadPipeline() {
     try {
-      const result = await backendClient.getPipelines();
+      // Get available pipelines first
+      const pipelinesResult = await backendClient.getPipelines();
       
-      if (result.success && result.pipelines.length > 0) {
-        // Use preferred pipeline if available, otherwise first one
-        this.pipelineId = result.preferredPipeline || result.pipelines[0].id;
-      } else {
+      if (!pipelinesResult.success || pipelinesResult.pipelines.length === 0) {
         console.error('No pipelines available');
+        return;
       }
+      
+      // Try to get selected pipeline from settings
+      const settingsResult = await backendClient.getSettings();
+      
+      if (settingsResult.settings?.selectedPipelineId) {
+        this.pipelineId = settingsResult.settings.selectedPipelineId;
+        // Find pipeline name
+        const pipeline = pipelinesResult.pipelines.find((p: any) => p.id === this.pipelineId);
+        this.pipelineName = pipeline?.name || this.pipelineId;
+        console.log('Using pipeline from settings:', this.pipelineName);
+        
+        // Notify parent of pipeline name
+        this.dispatchEvent(new CustomEvent('pipeline-loaded', {
+          detail: { name: this.pipelineName },
+          bubbles: true,
+          composed: true
+        }));
+        return;
+      }
+      
+      // Fall back to auto-selection (preferred or first)
+      this.pipelineId = pipelinesResult.preferredPipeline || pipelinesResult.pipelines[0].id;
+      const pipeline = pipelinesResult.pipelines.find((p: any) => p.id === this.pipelineId);
+      this.pipelineName = pipeline?.name || this.pipelineId;
+      console.log('Auto-selected pipeline:', this.pipelineName);
     } catch (error) {
-      console.error('Failed to load pipelines:', error);
+      console.error('Failed to load pipeline:', error);
+    }
+    
+    // Notify parent of pipeline name
+    if (this.pipelineName) {
+      this.dispatchEvent(new CustomEvent('pipeline-loaded', {
+        detail: { name: this.pipelineName },
+        bubbles: true,
+        composed: true
+      }));
     }
   }
 
@@ -258,12 +221,12 @@ export class AssistChat extends LitElement {
     }
   }
 
-  private handleInput(e: Event) {
-    const textarea = e.target as HTMLTextAreaElement;
+  private handleInput(e: CustomEvent) {
+    const textarea = e.target as any;
     this.inputValue = textarea.value;
   }
 
-  private handleKeyPress(e: KeyboardEvent) {
+  private handleKeyDown(e: KeyboardEvent) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       this.sendMessage();
@@ -369,14 +332,15 @@ export class AssistChat extends LitElement {
         ? html`
             <div class="actions-bar">
               <div class="actions-bar-left">
-                <button
-                  class="button secondary"
+                <ha-button
+                  variant="secondary"
+                  size="small"
                   @click="${this.handleClearHistory}"
                   ?disabled="${this.isLoading}"
                   title="Clear conversation history"
                 >
                   Clear History
-                </button>
+                </ha-button>
               </div>
             </div>
           `
@@ -400,7 +364,7 @@ export class AssistChat extends LitElement {
         ${this.isLoading
           ? html`
               <div class="thinking-indicator">
-                <span class="spinner"></span>
+                <wa-spinner></wa-spinner>
                 <span>Assistant is thinking...</span>
               </div>
             `
@@ -408,22 +372,22 @@ export class AssistChat extends LitElement {
       </div>
 
       <div class="input-container">
-        <textarea
-          class="input-field"
+        <ha-textarea
           placeholder="Type your message... (Enter to send, Shift+Enter for new line)"
           .value="${this.inputValue}"
-          @input="${this.handleInput}"
-          @keypress="${this.handleKeyPress}"
+          @wa-input="${this.handleInput}"
+          @keydown="${this.handleKeyDown}"
           ?disabled="${this.isLoading}"
           rows="1"
-        ></textarea>
-        <button
-          class="button"
+          resize="auto"
+        ></ha-textarea>
+        <ha-button
+          variant="primary"
           @click="${this.sendMessage}"
           ?disabled="${this.isLoading || !this.inputValue.trim()}"
         >
           Send
-        </button>
+        </ha-button>
       </div>
     `;
   }

@@ -1,0 +1,173 @@
+/**
+ * Home Assistant Theme System
+ * Semantic tokens and light/dark mode support
+ */
+
+/* ============================================
+   Light Theme (Default)
+   ============================================ */
+:root {
+  /* Surfaces */
+  --ha-color-surface-default: #ffffff;
+  --ha-color-surface-card: var(--ha-color-neutral-98);
+  --ha-color-surface-raised: #ffffff;
+  
+  /* Text */
+  --ha-color-text-primary: var(--ha-color-neutral-05);
+  --ha-color-text-secondary: #757575;
+  --ha-color-text-disabled: #9e9e9e;
+  --ha-color-text-link: var(--ha-color-primary-40);
+  
+  /* Borders */
+  --ha-color-border-normal: rgba(0, 0, 0, 0.12);
+  --ha-color-border-light: rgba(0, 0, 0, 0.06);
+  --ha-color-border-focus: var(--ha-color-primary-40);
+  
+  /* Fills - Primary */
+  --ha-color-fill-primary-loud: var(--ha-color-primary-40);
+  --ha-color-fill-primary-loud-hover: var(--ha-color-primary-30);
+  --ha-color-fill-primary-normal: var(--ha-color-primary-90);
+  --ha-color-fill-primary-quiet: var(--ha-color-primary-95);
+  
+  /* Fills - Neutral */
+  --ha-color-fill-neutral-loud: var(--ha-color-neutral-20);
+  --ha-color-fill-neutral-normal: var(--ha-color-neutral-95);
+  --ha-color-fill-neutral-quiet: var(--ha-color-neutral-98);
+  
+  /* Fills - Semantic */
+  --ha-color-fill-success: var(--ha-color-green-40);
+  --ha-color-fill-success-quiet: var(--ha-color-green-90);
+  --ha-color-fill-warning: var(--ha-color-orange-40);
+  --ha-color-fill-warning-quiet: var(--ha-color-orange-90);
+  --ha-color-fill-danger: var(--ha-color-red-40);
+  --ha-color-fill-danger-quiet: var(--ha-color-red-90);
+  --ha-color-fill-info: var(--ha-color-blue-40);
+  --ha-color-fill-info-quiet: var(--ha-color-blue-90);
+  
+  /* "On" Colors (text on colored backgrounds) */
+  --ha-color-on-primary: #ffffff;
+  --ha-color-on-success: #ffffff;
+  --ha-color-on-warning: #000000;
+  --ha-color-on-danger: #ffffff;
+  --ha-color-on-info: #ffffff;
+  
+  /* Divider */
+  --ha-color-divider: rgba(0, 0, 0, 0.12);
+  
+  /* Input */
+  --ha-color-input-background: var(--ha-color-surface-default);
+  --ha-color-input-border: var(--ha-color-border-normal);
+  --ha-color-input-border-focus: var(--ha-color-border-focus);
+}
+
+/* ============================================
+   Dark Theme
+   ============================================ */
+[data-theme="dark"] {
+  /* Surfaces */
+  --ha-color-surface-default: #111111;
+  --ha-color-surface-card: var(--ha-color-neutral-10);
+  --ha-color-surface-raised: var(--ha-color-neutral-20);
+  
+  /* Text */
+  --ha-color-text-primary: var(--ha-color-neutral-90);
+  --ha-color-text-secondary: var(--ha-color-neutral-80);
+  --ha-color-text-disabled: var(--ha-color-neutral-60);
+  --ha-color-text-link: var(--ha-color-primary-60);
+  
+  /* Borders */
+  --ha-color-border-normal: rgba(255, 255, 255, 0.12);
+  --ha-color-border-light: rgba(255, 255, 255, 0.06);
+  --ha-color-border-focus: var(--ha-color-primary-50);
+  
+  /* Fills - Primary */
+  --ha-color-fill-primary-loud: var(--ha-color-primary-50);
+  --ha-color-fill-primary-loud-hover: var(--ha-color-primary-60);
+  --ha-color-fill-primary-normal: var(--ha-color-primary-10);
+  --ha-color-fill-primary-quiet: var(--ha-color-primary-05);
+  
+  /* Fills - Neutral */
+  --ha-color-fill-neutral-loud: var(--ha-color-neutral-80);
+  --ha-color-fill-neutral-normal: var(--ha-color-neutral-20);
+  --ha-color-fill-neutral-quiet: var(--ha-color-neutral-10);
+  
+  /* Fills - Semantic (adjusted for dark backgrounds) */
+  --ha-color-fill-success: var(--ha-color-green-50);
+  --ha-color-fill-warning: var(--ha-color-orange-50);
+  --ha-color-fill-danger: var(--ha-color-red-50);
+  --ha-color-fill-info: var(--ha-color-blue-50);
+  
+  /* Divider */
+  --ha-color-divider: rgba(255, 255, 255, 0.12);
+  
+  /* Shadows (darker in dark mode) */
+  --ha-shadow-color-light: rgba(0, 0, 0, 0.24);
+  --ha-shadow-color-dark: rgba(0, 0, 0, 0.48);
+}
+
+/* ============================================
+   Web Awesome Token Mappings
+   Maps HA tokens → WA component variables
+   ============================================ */
+:root {
+  /* Colors - Brand (Primary) */
+  --wa-color-brand-fill-loud: var(--ha-color-fill-primary-loud);
+  --wa-color-brand-fill-normal: var(--ha-color-fill-primary-normal);
+  --wa-color-brand-fill-quiet: var(--ha-color-fill-primary-quiet);
+  --wa-color-brand-on-loud: var(--ha-color-on-primary);
+  
+  /* Colors - Neutral */
+  --wa-color-neutral-fill-loud: var(--ha-color-fill-neutral-loud);
+  --wa-color-neutral-fill-normal: var(--ha-color-fill-neutral-normal);
+  --wa-color-neutral-fill-quiet: var(--ha-color-fill-neutral-quiet);
+  
+  /* Colors - Success */
+  --wa-color-success-fill-loud: var(--ha-color-fill-success);
+  --wa-color-success-fill-quiet: var(--ha-color-fill-success-quiet);
+  --wa-color-success-on-loud: var(--ha-color-on-success);
+  
+  /* Colors - Warning */
+  --wa-color-warning-fill-loud: var(--ha-color-fill-warning);
+  --wa-color-warning-fill-quiet: var(--ha-color-fill-warning-quiet);
+  --wa-color-warning-on-loud: var(--ha-color-on-warning);
+  
+  /* Colors - Danger */
+  --wa-color-danger-fill-loud: var(--ha-color-fill-danger);
+  --wa-color-danger-fill-quiet: var(--ha-color-fill-danger-quiet);
+  --wa-color-danger-on-loud: var(--ha-color-on-danger);
+  
+  /* Spacing */
+  --wa-space-xs: var(--ha-space-1);
+  --wa-space-s: var(--ha-space-2);
+  --wa-space-m: var(--ha-space-4);
+  --wa-space-l: var(--ha-space-6);
+  --wa-space-xl: var(--ha-space-8);
+  
+  /* Typography */
+  --wa-font-family-body: var(--ha-font-family-body);
+  --wa-font-family-heading: var(--ha-font-family-heading);
+  --wa-font-size-s: var(--ha-font-size-s);
+  --wa-font-size-m: var(--ha-font-size-m);
+  --wa-font-size-l: var(--ha-font-size-l);
+  --wa-font-weight-normal: var(--ha-font-weight-normal);
+  --wa-font-weight-medium: var(--ha-font-weight-medium);
+  --wa-font-weight-bold: var(--ha-font-weight-bold);
+  
+  /* Border Radius */
+  --wa-border-radius-s: var(--ha-border-radius-sm);
+  --wa-border-radius-m: var(--ha-border-radius-md);
+  --wa-border-radius-l: var(--ha-border-radius-lg);
+  --wa-border-radius-pill: var(--ha-border-radius-pill);
+  
+  /* Shadows */
+  --wa-box-shadow-s: var(--ha-box-shadow-s);
+  --wa-box-shadow-m: var(--ha-box-shadow-m);
+  --wa-box-shadow-l: var(--ha-box-shadow-l);
+  
+  /* Form Controls */
+  --wa-form-control-height: 40px;
+  --wa-form-control-border-radius: var(--ha-border-radius-md);
+  --wa-input-border-color: var(--ha-color-input-border);
+  --wa-input-border-color-focus: var(--ha-color-input-border-focus);
+  --wa-input-background-color: var(--ha-color-input-background);
+}

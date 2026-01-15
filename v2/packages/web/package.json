@@ -8,9 +8,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@awesome.me/webawesome": "^3.1.0",
+    "@ha-assist/shared-types": "workspace:*",
     "lit": "^3.1.0",
-    "marked": "^11.1.1",
-    "@ha-assist/shared-types": "workspace:*"
+    "marked": "^11.1.1"
   },
   "devDependencies": {
     "vite": "^5.0.11",

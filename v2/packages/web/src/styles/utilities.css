@@ -1,0 +1,133 @@
+/**
+ * CSS Utilities
+ * Layout helpers and global utilities
+ */
+
+/* ============================================
+   Global Scrollbar Styling
+   ============================================ */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ha-color-border-normal) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--ha-color-border-normal);
+  border-radius: var(--ha-border-radius-sm);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--ha-color-text-secondary);
+}
+
+/* ============================================
+   Layout Utilities
+   ============================================ */
+.wa-stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.wa-cluster {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.wa-split {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.wa-grid {
+  display: grid;
+}
+
+/* ============================================
+   Gap Utilities
+   ============================================ */
+.wa-gap-1 { gap: var(--ha-space-1); }
+.wa-gap-2 { gap: var(--ha-space-2); }
+.wa-gap-3 { gap: var(--ha-space-3); }
+.wa-gap-4 { gap: var(--ha-space-4); }
+.wa-gap-6 { gap: var(--ha-space-6); }
+.wa-gap-8 { gap: var(--ha-space-8); }
+
+/* ============================================
+   Text Utilities
+   ============================================ */
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+.text-primary { color: var(--ha-color-text-primary); }
+.text-secondary { color: var(--ha-color-text-secondary); }
+.text-disabled { color: var(--ha-color-text-disabled); }
+
+.text-xs { font-size: var(--ha-font-size-xs); }
+.text-s { font-size: var(--ha-font-size-s); }
+.text-m { font-size: var(--ha-font-size-m); }
+.text-l { font-size: var(--ha-font-size-l); }
+.text-xl { font-size: var(--ha-font-size-xl); }
+
+.font-normal { font-weight: var(--ha-font-weight-normal); }
+.font-medium { font-weight: var(--ha-font-weight-medium); }
+.font-bold { font-weight: var(--ha-font-weight-bold); }
+
+/* ============================================
+   Visibility Utilities
+   ============================================ */
+.wa-visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border-width: 0 !important;
+}
+
+/* ============================================
+   Animation Utilities
+   ============================================ */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes slide-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.animate-fade-in { animation: fade-in var(--ha-transition-fast) ease-out; }
+.animate-slide-in { animation: slide-in-up var(--ha-transition-base) ease-out; }
+.animate-pulse { animation: pulse 1.5s ease-in-out infinite; }

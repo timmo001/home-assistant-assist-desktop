@@ -1,5 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import '@awesome.me/webawesome/dist/components/card/card.js';
+import '@awesome.me/webawesome/dist/components/callout/callout.js';
 
 interface Message {
   id: string;
@@ -37,48 +39,51 @@ export class MessageBubble extends LitElement {
       max-width: 90%;
     }
 
-    .bubble {
-      padding: var(--spacing-sm) var(--spacing-md);
-      border-radius: var(--radius-md);
+    wa-card {
       word-wrap: break-word;
       white-space: pre-wrap;
       line-height: 1.5;
     }
 
-    .message.user .bubble {
-      background-color: var(--color-primary);
+    .message.user wa-card {
+      background-color: var(--ha-color-fill-primary-loud);
       color: white;
-      border-bottom-right-radius: var(--radius-xs);
+      border-bottom-right-radius: var(--ha-border-radius-xs);
     }
 
-    .message.assistant .bubble {
-      background-color: var(--color-surface);
-      color: var(--color-text);
-      border-bottom-left-radius: var(--radius-xs);
-      border: 1px solid var(--color-border);
+    .message.user wa-card::part(base) {
+      background-color: var(--ha-color-fill-primary-loud);
+      color: white;
+      border: none;
     }
 
-    .message.error .bubble {
-      background-color: #fee2e2;
-      color: #991b1b;
-      border: 1px solid #fca5a5;
+    .message.assistant wa-card {
+      border-bottom-left-radius: var(--ha-border-radius-xs);
+    }
+
+    .message.assistant wa-card::part(base) {
+      background-color: var(--ha-color-surface);
+      border: 1px solid var(--ha-color-border);
+    }
+
+    wa-callout {
       text-align: center;
-      font-size: var(--font-size-sm);
+      font-size: var(--ha-font-size-sm);
     }
 
     .timestamp {
-      font-size: var(--font-size-xs);
-      color: var(--color-text-secondary);
-      margin-top: var(--spacing-xs);
-      padding: 0 var(--spacing-xs);
+      font-size: var(--ha-font-size-xs);
+      color: var(--ha-color-text-secondary);
+      margin-top: var(--ha-space-2);
+      padding: 0 var(--ha-space-2);
     }
 
     .role-label {
-      font-size: var(--font-size-xs);
-      font-weight: 600;
-      color: var(--color-text-secondary);
-      margin-bottom: var(--spacing-xs);
-      padding: 0 var(--spacing-xs);
+      font-size: var(--ha-font-size-xs);
+      font-weight: var(--ha-font-weight-semibold);
+      color: var(--ha-color-text-secondary);
+      margin-bottom: var(--ha-space-2);
+      padding: 0 var(--ha-space-2);
     }
   `;
 
@@ -120,18 +125,31 @@ export class MessageBubble extends LitElement {
       return html``;
     }
 
+    // Error messages use wa-callout
+    if (this.message.role === 'error') {
+      return html`
+        <div class="message error">
+          <wa-callout variant="danger">
+            <strong>Error</strong>
+            <div>${this.message.content}</div>
+          </wa-callout>
+          <div class="timestamp">
+            ${this.formatTimestamp(this.message.timestamp)}
+          </div>
+        </div>
+      `;
+    }
+
+    // User and assistant messages use wa-card
     return html`
       <div class="message ${this.message.role}">
         ${this.message.role === 'assistant'
           ? html`<div class="role-label">Assistant</div>`
           : ''}
-        ${this.message.role === 'error'
-          ? html`<div class="role-label">Error</div>`
-          : ''}
         
-        <div class="bubble">
+        <wa-card>
           ${this.message.content}
-        </div>
+        </wa-card>
         
         <div class="timestamp">
           ${this.formatTimestamp(this.message.timestamp)}

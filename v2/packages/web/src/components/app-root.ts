@@ -1,8 +1,11 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { backendClient } from '../lib/backend-client';
+import { ThemeManager } from '../lib/theme';
 import './assist-chat';
 import './settings-page';
+import '../elements/ha-button';
+import '@awesome.me/webawesome/dist/components/spinner/spinner.js';
 
 type Route = 'home' | 'settings';
 
@@ -16,44 +19,57 @@ export class AppRoot extends LitElement {
       width: 100%;
     }
 
-    .header {
+    .header-bar {
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      padding: var(--spacing-md);
-      background-color: var(--color-primary);
-      color: white;
-      box-shadow: var(--shadow-md);
+      align-items: center;
+      padding: 0 var(--ha-space-4);
+      background-color: var(--ha-color-surface);
+      border-bottom: 1px solid var(--ha-color-border);
+      min-height: 48px;
     }
 
-    .header h1 {
-      font-size: var(--font-size-lg);
-      margin: 0;
+    .pipeline-name {
+      color: var(--ha-color-text);
+      font-size: var(--ha-font-size-base);
+      font-weight: var(--ha-font-weight-medium);
     }
 
-    .nav {
+    .nav-tabs {
       display: flex;
-      gap: var(--spacing-md);
+      gap: var(--ha-space-2);
     }
 
-    .nav button {
-      color: white;
-      padding: var(--spacing-sm) var(--spacing-md);
-      border-radius: var(--radius-sm);
-      transition: background-color var(--transition-fast);
+    .nav-tabs button {
+      background: none;
+      border: none;
+      color: var(--ha-color-text-secondary);
+      font-size: var(--ha-font-size-base);
+      font-weight: var(--ha-font-weight-medium);
+      padding: var(--ha-space-3) var(--ha-space-4);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: color 0.2s, border-color 0.2s;
     }
 
-    .nav button:hover {
-      background-color: var(--color-primary-dark);
+    .nav-tabs button:hover {
+      color: var(--ha-color-text);
     }
 
-    .nav button.active {
-      background-color: var(--color-primary-dark);
-      font-weight: 600;
+    .nav-tabs button.active {
+      color: var(--ha-color-fill-primary-loud);
+      border-bottom-color: var(--ha-color-fill-primary-loud);
+    }
+
+    .main-content {
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
     .content {
-      flex: 1;
+      height: 100%;
       overflow: hidden;
       display: flex;
       flex-direction: column;
@@ -65,20 +81,12 @@ export class AppRoot extends LitElement {
       align-items: center;
       justify-content: center;
       height: 100%;
-      gap: var(--spacing-lg);
+      gap: var(--ha-space-6);
     }
 
-    .loading-screen .spinner {
-      width: 48px;
-      height: 48px;
-      border: 4px solid var(--color-border);
-      border-top-color: var(--color-primary);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+    .loading-screen p {
+      font-size: var(--ha-font-size-base);
+      color: var(--ha-color-text-secondary);
     }
 
     .error-screen {
@@ -87,45 +95,35 @@ export class AppRoot extends LitElement {
       align-items: center;
       justify-content: center;
       height: 100%;
-      padding: var(--spacing-xl);
+      padding: var(--ha-space-8);
       text-align: center;
-      gap: var(--spacing-lg);
+      gap: var(--ha-space-6);
     }
 
     .error-screen h2 {
-      color: var(--color-error);
+      color: var(--ha-color-text-danger);
+      font-size: var(--ha-font-size-xl);
+      font-weight: var(--ha-font-weight-medium);
       margin: 0;
     }
 
     .error-screen p {
-      color: var(--color-text-secondary);
+      color: var(--ha-color-text-secondary);
+      font-size: var(--ha-font-size-base);
       max-width: 500px;
-    }
-
-    .error-screen button {
-      padding: var(--spacing-sm) var(--spacing-lg);
-      background-color: var(--color-primary);
-      color: white;
-      border-radius: var(--radius-md);
-      font-weight: 600;
+      margin: 0;
     }
 
     .reconnect-banner {
-      background-color: var(--color-error);
+      background-color: var(--ha-color-fill-danger-loud);
       color: white;
-      padding: var(--spacing-md);
+      padding: var(--ha-space-4);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: var(--spacing-md);
-    }
-
-    .reconnect-banner button {
-      padding: var(--spacing-xs) var(--spacing-md);
-      background-color: white;
-      color: var(--color-error);
-      border-radius: var(--radius-sm);
-      font-weight: 600;
+      gap: var(--ha-space-4);
+      font-size: var(--ha-font-size-sm);
+      font-weight: var(--ha-font-weight-medium);
     }
   `;
 
@@ -147,12 +145,21 @@ export class AppRoot extends LitElement {
   @state()
   private showReconnectBanner: boolean = false;
 
+  @state()
+  private pipelineName: string = '';
+
   async connectedCallback() {
     super.connectedCallback();
+    
+    // Initialize theme manager
+    ThemeManager.init();
     
     // Listen for hash changes for routing
     window.addEventListener('hashchange', () => this.handleRouteChange());
     this.handleRouteChange();
+
+    // Listen for pipeline loaded event from chat
+    this.addEventListener('pipeline-loaded', this.handlePipelineLoaded as EventListener);
 
     // Initialize app
     await this.initialize();
@@ -228,6 +235,10 @@ export class AppRoot extends LitElement {
     window.location.hash = route;
   }
 
+  private handlePipelineLoaded(e: CustomEvent) {
+    this.pipelineName = e.detail.name;
+  }
+
   private async handleRetry() {
     this.showReconnectBanner = false;
     await this.initialize();
@@ -261,7 +272,7 @@ export class AppRoot extends LitElement {
     if (this.isLoading) {
       return html`
         <div class="loading-screen">
-          <div class="spinner"></div>
+          <wa-spinner style="font-size: 3rem;"></wa-spinner>
           <p>Connecting to backend...</p>
         </div>
       `;
@@ -273,7 +284,7 @@ export class AppRoot extends LitElement {
         <div class="error-screen">
           <h2>Connection Error</h2>
           <p>${this.error}</p>
-          <button @click="${this.handleRetry}">Retry</button>
+          <ha-button variant="primary" @click="${this.handleRetry}">Retry</ha-button>
         </div>
       `;
     }
@@ -284,14 +295,18 @@ export class AppRoot extends LitElement {
         ? html`
             <div class="reconnect-banner">
               <span>⚠️ Connection to backend lost</span>
-              <button @click="${this.handleReconnect}">Reconnect</button>
+              <ha-button variant="secondary" size="small" @click="${this.handleReconnect}">
+                Reconnect
+              </ha-button>
             </div>
           `
         : ''}
       
-      <div class="header">
-        <h1>Home Assistant Assist</h1>
-        <nav class="nav">
+      <div class="header-bar">
+        <div class="pipeline-name">
+          ${this.pipelineName || ''}
+        </div>
+        <nav class="nav-tabs">
           <button
             class="${this.currentRoute === 'home' ? 'active' : ''}"
             @click="${() => this.navigate('home')}"
@@ -307,8 +322,10 @@ export class AppRoot extends LitElement {
         </nav>
       </div>
       
-      <div class="content">
-        ${this.renderRoute()}
+      <div class="main-content">
+        <div class="content">
+          ${this.renderRoute()}
+        </div>
       </div>
     `;
   }
@@ -321,7 +338,9 @@ export class AppRoot extends LitElement {
             <div class="error-screen">
               <h2>Configuration Required</h2>
               <p>Please configure your Home Assistant connection first.</p>
-              <button @click="${() => this.navigate('settings')}">Go to Settings</button>
+              <ha-button variant="primary" @click="${() => this.navigate('settings')}">
+                Go to Settings
+              </ha-button>
             </div>
           `;
         }

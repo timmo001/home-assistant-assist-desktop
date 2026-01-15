@@ -1,6 +1,13 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { backendClient } from '../lib/backend-client';
+import { ThemeManager } from '../lib/theme';
+import '../elements/ha-button';
+import '../elements/ha-input';
+import '../elements/ha-select';
+import '@awesome.me/webawesome/dist/components/option/option.js';
+import '@awesome.me/webawesome/dist/components/spinner/spinner.js';
+import '@awesome.me/webawesome/dist/components/callout/callout.js';
 
 @customElement('settings-page')
 export class SettingsPage extends LitElement {
@@ -14,145 +21,62 @@ export class SettingsPage extends LitElement {
     .container {
       max-width: 600px;
       margin: 0 auto;
-      padding: var(--spacing-xl);
+      padding: var(--ha-space-8);
     }
 
     .header {
-      margin-bottom: var(--spacing-xl);
+      margin-bottom: var(--ha-space-8);
     }
 
     .header h2 {
-      font-size: var(--font-size-xl);
-      margin-bottom: var(--spacing-sm);
+      font-size: var(--ha-font-size-2xl);
+      margin-bottom: var(--ha-space-2);
     }
 
     .header p {
-      color: var(--color-text-secondary);
+      color: var(--ha-color-text-secondary);
     }
 
     .form-group {
-      margin-bottom: var(--spacing-lg);
+      margin-bottom: var(--ha-space-6);
     }
 
-    .form-group label {
-      display: block;
-      font-weight: 600;
-      margin-bottom: var(--spacing-sm);
-    }
-
-    .form-group input {
+    .form-group ha-input,
+    .form-group ha-select {
       width: 100%;
-      padding: var(--spacing-sm) var(--spacing-md);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-sm);
-      background-color: var(--color-background);
-      font-size: var(--font-size-base);
-      box-sizing: border-box;
-    }
-
-    .form-group input:focus {
-      outline: none;
-      border-color: var(--color-primary);
-    }
-
-    .form-group input:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
     }
 
     .form-group .help-text {
-      font-size: var(--font-size-sm);
-      color: var(--color-text-secondary);
-      margin-top: var(--spacing-xs);
+      font-size: var(--ha-font-size-s);
+      color: var(--ha-color-text-secondary);
+      margin-top: var(--ha-space-1);
+      display: block;
     }
 
     .actions {
       display: flex;
-      gap: var(--spacing-md);
-      margin-top: var(--spacing-xl);
+      gap: var(--ha-space-4);
+      margin-top: var(--ha-space-8);
       flex-wrap: wrap;
     }
 
-    .button {
-      padding: var(--spacing-sm) var(--spacing-lg);
-      border-radius: var(--radius-md);
-      font-weight: 600;
-      transition: all var(--transition-fast);
-      cursor: pointer;
-    }
-
-    .button.primary {
-      background-color: var(--color-primary);
-      color: white;
-    }
-
-    .button.primary:hover:not(:disabled) {
-      background-color: var(--color-primary-dark);
-    }
-
-    .button.secondary {
-      background-color: transparent;
-      color: var(--color-primary);
-      border: 1px solid var(--color-primary);
-    }
-
-    .button.secondary:hover:not(:disabled) {
-      background-color: var(--color-primary);
-      color: white;
-    }
-
-    .button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
     .status-message {
-      padding: var(--spacing-md);
-      border-radius: var(--radius-sm);
-      margin-top: var(--spacing-md);
-      animation: slideIn 0.3s ease-out;
+      margin-top: var(--ha-space-4);
     }
 
-    @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateY(-10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    .section-divider {
+      height: 1px;
+      background-color: var(--ha-color-border);
+      margin: var(--ha-space-8) 0;
     }
 
-    .status-message.success {
-      background-color: #10b981;
-      color: white;
+    .theme-buttons {
+      display: flex;
+      gap: var(--ha-space-3);
     }
 
-    .status-message.error {
-      background-color: #ef4444;
-      color: white;
-    }
-
-    .status-message.info {
-      background-color: #3b82f6;
-      color: white;
-    }
-
-    .spinner {
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin-right: var(--spacing-sm);
-      vertical-align: middle;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+    .theme-buttons ha-button {
+      flex: 1;
     }
   `;
 
@@ -163,16 +87,29 @@ export class SettingsPage extends LitElement {
   private accessToken: string = '';
 
   @state()
+  private selectedPipelineId: string = '';
+
+  @state()
+  private pipelines: Array<{ id: string; name: string }> = [];
+
+  @state()
   private isLoading: boolean = false;
 
   @state()
   private isTesting: boolean = false;
 
   @state()
-  private statusMessage: { type: 'success' | 'error' | 'info'; text: string } | null = null;
+  private isLoadingPipelines: boolean = false;
+
+  @state()
+  private statusMessage: { type: 'success' | 'danger' | 'primary'; text: string } | null = null;
+
+  @state()
+  private currentTheme: 'light' | 'dark' = 'light';
 
   async connectedCallback() {
     super.connectedCallback();
+    this.currentTheme = ThemeManager.getEffectiveTheme();
     await this.loadSettings();
   }
 
@@ -183,9 +120,15 @@ export class SettingsPage extends LitElement {
       
       if (result.settings) {
         this.url = result.settings.url || '';
+        this.selectedPipelineId = result.settings.selectedPipelineId || '';
         // Access token will be masked from backend (e.g., "test...jkl")
         // Don't populate it - let user re-enter if they want to change
         this.accessToken = '';
+        
+        // Load pipelines if we have a connection
+        if (this.url) {
+          await this.loadPipelines();
+        }
       }
     } catch (error) {
       console.error('Failed to load settings:', error);
@@ -195,18 +138,58 @@ export class SettingsPage extends LitElement {
     }
   }
 
-  private handleUrlInput(e: Event) {
-    const input = e.target as HTMLInputElement;
+  private async loadPipelines() {
+    try {
+      this.isLoadingPipelines = true;
+      const result = await backendClient.getPipelines();
+      
+      if (result.success && result.pipelines) {
+        this.pipelines = result.pipelines.map((p: any) => ({
+          id: p.id,
+          name: p.name || p.id,
+        }));
+        
+        // Auto-select preferred pipeline if no selection yet
+        if (!this.selectedPipelineId && result.preferredPipeline) {
+          this.selectedPipelineId = result.preferredPipeline;
+        }
+        // Or select first pipeline
+        else if (!this.selectedPipelineId && this.pipelines.length > 0) {
+          this.selectedPipelineId = this.pipelines[0].id;
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load pipelines:', error);
+      // Silently fail - user can still save without selecting pipeline
+    } finally {
+      this.isLoadingPipelines = false;
+    }
+  }
+
+  private handleUrlInput(e: CustomEvent) {
+    const input = e.target as any;
     this.url = input.value.trim();
     // Clear status message on input
     this.statusMessage = null;
   }
 
-  private handleTokenInput(e: Event) {
-    const input = e.target as HTMLInputElement;
+  private handleTokenInput(e: CustomEvent) {
+    const input = e.target as any;
     this.accessToken = input.value.trim();
     // Clear status message on input
     this.statusMessage = null;
+  }
+
+  private handlePipelineSelect(e: CustomEvent) {
+    const select = e.target as any;
+    this.selectedPipelineId = select.value;
+    // Clear status message on input
+    this.statusMessage = null;
+  }
+
+  private handleThemeChange(theme: 'light' | 'dark') {
+    ThemeManager.setTheme(theme);
+    this.currentTheme = theme;
   }
 
   private validateUrl(url: string): boolean {
@@ -225,7 +208,7 @@ export class SettingsPage extends LitElement {
     // Validation
     if (!this.url) {
       this.statusMessage = {
-        type: 'error',
+        type: 'danger',
         text: 'Please enter a Home Assistant URL',
       };
       return;
@@ -233,7 +216,7 @@ export class SettingsPage extends LitElement {
 
     if (!this.validateUrl(this.url)) {
       this.statusMessage = {
-        type: 'error',
+        type: 'danger',
         text: 'Invalid URL format. Must start with http:// or https://',
       };
       return;
@@ -241,7 +224,7 @@ export class SettingsPage extends LitElement {
 
     if (!this.accessToken) {
       this.statusMessage = {
-        type: 'error',
+        type: 'danger',
         text: 'Please enter an access token',
       };
       return;
@@ -256,15 +239,18 @@ export class SettingsPage extends LitElement {
           type: 'success',
           text: result.message || 'Connection successful!',
         };
+        
+        // Load available pipelines after successful connection
+        await this.loadPipelines();
       } else {
         this.statusMessage = {
-          type: 'error',
+          type: 'danger',
           text: result.error || 'Connection failed',
         };
       }
     } catch (error) {
       this.statusMessage = {
-        type: 'error',
+        type: 'danger',
         text: `Connection test failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       };
     } finally {
@@ -278,7 +264,7 @@ export class SettingsPage extends LitElement {
     // Validation
     if (!this.url) {
       this.statusMessage = {
-        type: 'error',
+        type: 'danger',
         text: 'Please enter a Home Assistant URL',
       };
       return;
@@ -286,7 +272,7 @@ export class SettingsPage extends LitElement {
 
     if (!this.validateUrl(this.url)) {
       this.statusMessage = {
-        type: 'error',
+        type: 'danger',
         text: 'Invalid URL format. Must start with http:// or https://',
       };
       return;
@@ -294,7 +280,7 @@ export class SettingsPage extends LitElement {
 
     if (!this.accessToken) {
       this.statusMessage = {
-        type: 'error',
+        type: 'danger',
         text: 'Please enter an access token',
       };
       return;
@@ -305,6 +291,7 @@ export class SettingsPage extends LitElement {
       const result = await backendClient.updateSettings({
         url: this.url,
         accessToken: this.accessToken,
+        selectedPipelineId: this.selectedPipelineId || undefined,
       });
 
       if (result.success) {
@@ -322,13 +309,13 @@ export class SettingsPage extends LitElement {
         }, 2000);
       } else {
         this.statusMessage = {
-          type: 'error',
+          type: 'danger',
           text: result.error || 'Failed to save settings',
         };
       }
     } catch (error) {
       this.statusMessage = {
-        type: 'error',
+        type: 'danger',
         text: `Failed to save settings: ${error instanceof Error ? error.message : 'Unknown error'}`,
       };
     } finally {
@@ -346,62 +333,128 @@ export class SettingsPage extends LitElement {
 
         <form @submit="${(e: Event) => e.preventDefault()}">
           <div class="form-group">
-            <label for="ha-url">Home Assistant URL *</label>
-            <input
-              id="ha-url"
+            <ha-input
+              label="Home Assistant URL"
               type="url"
               placeholder="http://homeassistant.local:8123"
               .value="${this.url}"
-              @input="${this.handleUrlInput}"
+              @wa-input="${this.handleUrlInput}"
               ?disabled="${this.isLoading || this.isTesting}"
               required
-            />
-            <div class="help-text">
-              The full URL of your Home Assistant instance (e.g., http://192.168.1.100:8123)
-            </div>
+            >
+              <span slot="help-text">
+                The full URL of your Home Assistant instance (e.g., http://192.168.1.100:8123)
+              </span>
+            </ha-input>
           </div>
 
           <div class="form-group">
-            <label for="access-token">Long-Lived Access Token *</label>
-            <input
-              id="access-token"
+            <ha-input
+              label="Long-Lived Access Token"
               type="password"
               placeholder="Enter your long-lived access token"
               .value="${this.accessToken}"
-              @input="${this.handleTokenInput}"
+              @wa-input="${this.handleTokenInput}"
               ?disabled="${this.isLoading || this.isTesting}"
               required
-            />
-            <div class="help-text">
-              Create a long-lived access token in Home Assistant: Profile → Security → Long-Lived Access Tokens
-            </div>
+            >
+              <span slot="help-text">
+                Create a long-lived access token in Home Assistant: Profile → Security → Long-Lived Access Tokens
+              </span>
+            </ha-input>
           </div>
 
+          ${this.pipelines.length > 0
+            ? html`
+                <div class="form-group">
+                  <ha-select
+                    label="Assist Pipeline"
+                    .value="${this.selectedPipelineId}"
+                    @wa-change="${this.handlePipelineSelect}"
+                    ?disabled="${this.isLoading || this.isTesting || this.isLoadingPipelines}"
+                  >
+                    ${this.pipelines.map(
+                      (pipeline) => html`
+                        <wa-option value="${pipeline.id}">
+                          ${pipeline.name}
+                        </wa-option>
+                      `
+                    )}
+                    <span slot="help-text">
+                      ${this.isLoadingPipelines 
+                        ? 'Loading pipelines...' 
+                        : 'Select which assist pipeline to use for conversations'}
+                    </span>
+                  </ha-select>
+                </div>
+              `
+            : this.url && !this.isLoadingPipelines
+            ? html`
+                <div class="form-group">
+                  <span class="help-text">
+                    Test the connection to load available pipelines
+                  </span>
+                </div>
+              `
+            : ''}
+
+          <div class="section-divider"></div>
+
+          <div class="form-group">
+            <label style="display: block; margin-bottom: var(--ha-space-3); font-weight: var(--ha-font-weight-medium);">
+              Theme
+            </label>
+            <div class="theme-buttons">
+              <ha-button
+                variant="${this.currentTheme === 'light' ? 'primary' : 'secondary'}"
+                @click="${() => this.handleThemeChange('light')}"
+              >
+                Light
+              </ha-button>
+              <ha-button
+                variant="${this.currentTheme === 'dark' ? 'primary' : 'secondary'}"
+                @click="${() => this.handleThemeChange('dark')}"
+              >
+                Dark
+              </ha-button>
+            </div>
+            <span class="help-text" style="margin-top: var(--ha-space-2);">
+              Choose your preferred color scheme
+            </span>
+          </div>
+
+          <div class="section-divider"></div>
+
           <div class="actions">
-            <button
-              class="button secondary"
-              type="button"
+            <ha-button
+              variant="secondary"
               @click="${this.handleTestConnection}"
               ?disabled="${this.isLoading || this.isTesting || !this.url || !this.accessToken}"
             >
-              ${this.isTesting ? html`<span class="spinner"></span>Testing...` : 'Test Connection'}
-            </button>
+              ${this.isTesting 
+                ? html`<wa-spinner slot="prefix"></wa-spinner>Testing...` 
+                : 'Test Connection'}
+            </ha-button>
             
-            <button
-              class="button primary"
-              type="button"
+            <ha-button
+              variant="primary"
               @click="${this.handleSave}"
               ?disabled="${this.isLoading || this.isTesting || !this.url || !this.accessToken}"
             >
-              ${this.isLoading ? html`<span class="spinner"></span>Saving...` : 'Save Settings'}
-            </button>
+              ${this.isLoading 
+                ? html`<wa-spinner slot="prefix"></wa-spinner>Saving...` 
+                : 'Save Settings'}
+            </ha-button>
           </div>
 
           ${this.statusMessage
             ? html`
-                <div class="status-message ${this.statusMessage.type}">
+                <wa-callout 
+                  variant="${this.statusMessage.type}" 
+                  class="status-message animate-slide-in"
+                >
                   ${this.statusMessage.text}
-                </div>
+                </wa-callout>
               `
             : ''}
         </form>

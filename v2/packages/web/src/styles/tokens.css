@@ -1,0 +1,147 @@
+/**
+ * Home Assistant Design Tokens
+ * Based on Home Assistant frontend theme system
+ */
+
+:root {
+  /* ============================================
+     Core Color Tokens - Primary (HA Blue)
+     ============================================ */
+  --ha-color-primary-05: #001721;
+  --ha-color-primary-10: #002e3e;
+  --ha-color-primary-20: #004156;
+  --ha-color-primary-30: #006787;
+  --ha-color-primary-40: #009ac7;  /* Base primary color */
+  --ha-color-primary-50: #18bcf2;
+  --ha-color-primary-60: #37c8fd;
+  --ha-color-primary-70: #7bd4fb;
+  --ha-color-primary-80: #b9e6fc;
+  --ha-color-primary-90: #dff3fc;
+  --ha-color-primary-95: #eff9fe;
+
+  /* ============================================
+     Core Color Tokens - Neutral Grayscale
+     ============================================ */
+  --ha-color-neutral-05: #000000;
+  --ha-color-neutral-10: #1c1c1c;
+  --ha-color-neutral-20: #282828;
+  --ha-color-neutral-30: #383838;
+  --ha-color-neutral-40: #4a4a4a;
+  --ha-color-neutral-50: #6f6f6f;
+  --ha-color-neutral-60: #909090;
+  --ha-color-neutral-70: #a8a8a8;
+  --ha-color-neutral-80: #9b9b9b;
+  --ha-color-neutral-90: #e1e1e1;
+  --ha-color-neutral-95: #f5f5f5;
+  --ha-color-neutral-98: #fafafa;
+  
+  /* ============================================
+     Core Color Tokens - Semantic Colors
+     ============================================ */
+  /* Success (Green) */
+  --ha-color-green-40: #4caf50;
+  --ha-color-green-50: #66bb6a;
+  --ha-color-green-90: #c8e6c9;
+  
+  /* Warning (Orange) */
+  --ha-color-orange-40: #ff9800;
+  --ha-color-orange-50: #ffa726;
+  --ha-color-orange-90: #ffe0b2;
+  
+  /* Danger (Red) */
+  --ha-color-red-40: #f44336;
+  --ha-color-red-50: #ef5350;
+  --ha-color-red-90: #ffcdd2;
+  
+  /* Info (Blue) */
+  --ha-color-blue-40: #2196f3;
+  --ha-color-blue-50: #42a5f5;
+  --ha-color-blue-90: #bbdefb;
+
+  /* ============================================
+     Spacing Scale (4px increments)
+     ============================================ */
+  --ha-space-1: 4px;
+  --ha-space-2: 8px;
+  --ha-space-3: 12px;
+  --ha-space-4: 16px;
+  --ha-space-5: 20px;
+  --ha-space-6: 24px;
+  --ha-space-7: 28px;
+  --ha-space-8: 32px;
+  --ha-space-9: 36px;
+  --ha-space-10: 40px;
+  --ha-space-12: 48px;
+  --ha-space-16: 64px;
+  --ha-space-20: 80px;
+
+  /* ============================================
+     Typography
+     ============================================ */
+  /* Font Families */
+  --ha-font-family-body: Roboto, "Noto Sans", sans-serif;
+  --ha-font-family-code: "Roboto Mono", "Courier New", monospace;
+  --ha-font-family-heading: var(--ha-font-family-body);
+
+  /* Font Sizes (base: 14px) */
+  --ha-font-size-xs: 0.714rem;   /* 10px */
+  --ha-font-size-s: 0.857rem;    /* 12px */
+  --ha-font-size-m: 1rem;         /* 14px */
+  --ha-font-size-l: 1.143rem;     /* 16px */
+  --ha-font-size-xl: 1.429rem;    /* 20px */
+  --ha-font-size-2xl: 1.714rem;   /* 24px */
+  --ha-font-size-3xl: 2rem;       /* 28px */
+  --ha-font-size-4xl: 2.286rem;   /* 32px */
+
+  /* Font Weights */
+  --ha-font-weight-light: 300;
+  --ha-font-weight-normal: 400;
+  --ha-font-weight-medium: 500;
+  --ha-font-weight-bold: 700;
+
+  /* Line Heights */
+  --ha-line-height-condensed: 1.2;
+  --ha-line-height-normal: 1.6;
+  --ha-line-height-expanded: 2;
+
+  /* ============================================
+     Border Radius
+     ============================================ */
+  --ha-border-radius-sm: 4px;
+  --ha-border-radius-md: 8px;
+  --ha-border-radius-lg: 12px;
+  --ha-border-radius-xl: 16px;
+  --ha-border-radius-2xl: 20px;
+  --ha-border-radius-pill: 9999px;
+  --ha-border-radius-circle: 50%;
+
+  /* ============================================
+     Shadows
+     ============================================ */
+  --ha-shadow-color-light: rgba(0, 0, 0, 0.08);
+  --ha-shadow-color-dark: rgba(0, 0, 0, 0.16);
+  
+  --ha-box-shadow-xs: 0 1px 2px 0 var(--ha-shadow-color-light);
+  --ha-box-shadow-s: 0 2px 4px 0 var(--ha-shadow-color-light);
+  --ha-box-shadow-m: 0 4px 8px 0 var(--ha-shadow-color-light);
+  --ha-box-shadow-l: 0 8px 16px 0 var(--ha-shadow-color-dark);
+  --ha-box-shadow-xl: 0 12px 24px 0 var(--ha-shadow-color-dark);
+
+  /* ============================================
+     Transitions
+     ============================================ */
+  --ha-transition-fast: 150ms ease;
+  --ha-transition-base: 250ms ease;
+  --ha-transition-slow: 350ms ease;
+
+  /* ============================================
+     Z-Index Scale
+     ============================================ */
+  --ha-z-index-dropdown: 1000;
+  --ha-z-index-sticky: 1020;
+  --ha-z-index-fixed: 1030;
+  --ha-z-index-modal-backdrop: 1040;
+  --ha-z-index-modal: 1050;
+  --ha-z-index-popover: 1060;
+  --ha-z-index-tooltip: 1070;
+}
