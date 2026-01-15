@@ -214,19 +214,121 @@ Test connection to a Home Assistant instance without saving settings.
 
 ---
 
-## Not Yet Implemented
+### Pipeline Management
 
-The following endpoints are planned but not yet implemented:
+All pipeline endpoints require authentication.
 
-### Home Assistant Proxy
+#### `GET /api/pipelines`
 
-- `WS /api/ha/ws` - WebSocket proxy to Home Assistant
-- `GET /api/ha/pipelines` - List available assist pipelines
+List all available assist pipelines from Home Assistant.
 
-### Pipeline Execution
+**Headers:**
+- `Authorization: Bearer <token>` (required)
 
-- `POST /api/pipeline/run-text` - Execute pipeline with text input
-- `POST /api/pipeline/run-audio` - Execute pipeline with audio input
+**Response:**
+```json
+{
+  "success": true,
+  "pipelines": [
+    {
+      "id": "01234567890abcdef",
+      "name": "Home Assistant",
+      "language": "en",
+      "conversation_engine": "homeassistant",
+      "stt_engine": "whisper",
+      "tts_engine": "google_translate",
+      ...
+    }
+  ],
+  "preferredPipeline": "01234567890abcdef"
+}
+```
+
+**Error Response:**
+```json
+{
+  "success": false,
+  "error": "Home Assistant not configured"
+}
+```
+
+#### `POST /api/pipelines/run-text`
+
+Execute an assist pipeline with text input.
+
+**Headers:**
+- `Authorization: Bearer <token>` (required)
+
+**Request:**
+```json
+{
+  "text": "Turn on the living room lights",
+  "pipelineId": "01234567890abcdef",
+  "conversationId": "optional_conversation_id"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "response": "I've turned on the living room lights",
+  "events": [
+    {
+      "type": "run-start",
+      "timestamp": "2024-01-15T12:00:00.000Z",
+      "data": {...}
+    },
+    {
+      "type": "intent-end",
+      "timestamp": "2024-01-15T12:00:01.000Z",
+      "data": {
+        "response": {
+          "speech": {
+            "plain": {
+              "speech": "I've turned on the living room lights"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "run-end",
+      "timestamp": "2024-01-15T12:00:01.500Z",
+      "data": {...}
+    }
+  ]
+}
+```
+
+**Error Responses:**
+```json
+{
+  "success": false,
+  "error": "Text input is required"
+}
+```
+
+```json
+{
+  "success": false,
+  "error": "No pipeline specified. Please select a pipeline in settings."
+}
+```
+
+#### `POST /api/pipelines/run-audio`
+
+Execute an assist pipeline with audio input.
+
+**Status:** Not yet implemented (planned for Phase 4)
+
+**Response:**
+```json
+{
+  "success": false,
+  "error": "Audio pipelines not yet implemented (Phase 4)"
+}
+```
 
 ---
 
