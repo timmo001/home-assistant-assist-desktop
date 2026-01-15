@@ -6,7 +6,7 @@
     "ha-assist": "./dist/cli.js"
   },
   "scripts": {
-    "dev": "bun run src/index.ts",
+    "dev": "bun run src/index.ts backend",
     "build": "tsc"
   },
   "dependencies": {
