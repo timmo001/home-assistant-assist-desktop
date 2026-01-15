@@ -126,3 +126,28 @@ a:focus-visible {
   background-color: var(--ha-color-fill-primary-normal);
   color: var(--ha-color-text-primary);
 }
+
+/* ============================================
+   Web Awesome Component Overrides
+   ============================================ */
+wa-dialog::part(title) {
+  color: var(--ha-color-text-primary);
+}
+
+wa-dialog::part(header-actions) {
+  color: var(--ha-color-text-primary);
+}
+
+wa-dialog::part(close-button) {
+  color: var(--ha-color-text-primary);
+}
+
+/* Override browser autofill background */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px var(--input-fill-color) inset !important;
+  -webkit-text-fill-color: var(--input-ink-color) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}

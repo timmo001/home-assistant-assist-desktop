@@ -54,10 +54,21 @@
   /* Divider */
   --ha-color-divider: rgba(0, 0, 0, 0.12);
   
+  /* Input/Select - Text and Labels */
+  --input-fill-color: rgb(245, 245, 245);
+  --input-ink-color: rgba(0, 0, 0, 0.87);
+  --input-label-ink-color: rgba(0, 0, 0, 0.6);
+  --input-disabled-ink-color: rgba(0, 0, 0, 0.37);
+  --input-dropdown-icon-color: rgba(0, 0, 0, 0.54);
+  
   /* Input */
-  --ha-color-input-background: var(--ha-color-surface-default);
+  --ha-color-input-background: var(--input-fill-color);
   --ha-color-input-border: var(--ha-color-border-normal);
   --ha-color-input-border-focus: var(--ha-color-border-focus);
+  
+  /* Dialog */
+  --ha-dialog-surface-background: var(--ha-color-surface-raised);
+  --ha-dialog-scrim-backdrop-filter: brightness(68%);
 }
 
 /* ============================================
@@ -103,6 +114,20 @@
   /* Shadows (darker in dark mode) */
   --ha-shadow-color-light: rgba(0, 0, 0, 0.24);
   --ha-shadow-color-dark: rgba(0, 0, 0, 0.48);
+  
+  /* Input/Select - Text and Labels (Dark) */
+  --input-fill-color: rgba(255, 255, 255, 0.05);
+  --input-ink-color: rgba(255, 255, 255, 0.87);
+  --input-label-ink-color: rgba(255, 255, 255, 0.6);
+  --input-disabled-ink-color: rgba(255, 255, 255, 0.37);
+  --input-dropdown-icon-color: rgba(255, 255, 255, 0.54);
+  
+  /* Input (use fill color for consistency) */
+  --ha-color-input-background: var(--input-fill-color);
+  
+  /* Dialog */
+  --ha-dialog-surface-background: var(--ha-color-surface-raised);
+  --ha-dialog-scrim-backdrop-filter: brightness(32%);
 }
 
 /* ============================================
@@ -110,6 +135,32 @@
    Maps HA tokens → WA component variables
    ============================================ */
 :root {
+  /* Dialog Surface (CRITICAL: Must be set for dialogs to follow theme) */
+  --wa-color-surface-default: var(--ha-color-surface-card);
+  --wa-color-surface-raised: var(--ha-dialog-surface-background);
+  --wa-color-surface-border: var(--ha-color-border-light);
+  
+  /* Text Colors (for dialog content) */
+  --wa-color-text-normal: var(--ha-color-text-primary);
+  --wa-color-text-quiet: var(--ha-color-text-secondary);
+  
+  /* Shoelace Form Controls */
+  --sl-input-color: var(--input-ink-color);
+  --sl-input-label-color: var(--input-label-ink-color);
+  --sl-input-help-text-color: var(--input-label-ink-color);
+  --sl-input-placeholder-color: var(--input-disabled-ink-color);
+  --sl-input-icon-color: var(--input-dropdown-icon-color);
+  
+  /* Shoelace Panel/Menu (for dropdowns) */
+  --sl-panel-background-color: var(--ha-color-surface-raised);
+  --sl-panel-border-color: var(--ha-color-border-light);
+  --sl-color-neutral-0: var(--ha-color-surface-raised);
+  --sl-color-neutral-1000: var(--ha-color-text-primary);
+  
+  /* Dialog/Modal Header */
+  --wa-dialog-header-color: var(--ha-color-text-primary);
+  --wa-dialog-title-color: var(--ha-color-text-primary);
+  
   /* Colors - Brand (Primary) */
   --wa-color-brand-fill-loud: var(--ha-color-fill-primary-loud);
   --wa-color-brand-fill-normal: var(--ha-color-fill-primary-normal);

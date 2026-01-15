@@ -24,19 +24,6 @@ export class SettingsPage extends LitElement {
       padding: var(--ha-space-8);
     }
 
-    .header {
-      margin-bottom: var(--ha-space-8);
-    }
-
-    .header h2 {
-      font-size: var(--ha-font-size-2xl);
-      margin-bottom: var(--ha-space-2);
-    }
-
-    .header p {
-      color: var(--ha-color-text-secondary);
-    }
-
     .form-group {
       margin-bottom: var(--ha-space-6);
     }
@@ -77,6 +64,10 @@ export class SettingsPage extends LitElement {
 
     .theme-buttons ha-button {
       flex: 1;
+    }
+
+    label {
+      color: var(--ha-color-text-primary);
     }
   `;
 
@@ -297,16 +288,11 @@ export class SettingsPage extends LitElement {
       if (result.success) {
         this.statusMessage = {
           type: 'success',
-          text: 'Settings saved successfully! You can now use the chat.',
+          text: 'Settings saved successfully!',
         };
 
-        // Emit event to parent
+        // Emit event to parent (dialog will close automatically)
         this.dispatchEvent(new CustomEvent('settings-saved'));
-
-        // Redirect to chat after 2 seconds
-        setTimeout(() => {
-          window.location.hash = 'home';
-        }, 2000);
       } else {
         this.statusMessage = {
           type: 'danger',
@@ -326,11 +312,6 @@ export class SettingsPage extends LitElement {
   render() {
     return html`
       <div class="container">
-        <div class="header">
-          <h2>Settings</h2>
-          <p>Configure your Home Assistant connection</p>
-        </div>
-
         <form @submit="${(e: Event) => e.preventDefault()}">
           <div class="form-group">
             <ha-input

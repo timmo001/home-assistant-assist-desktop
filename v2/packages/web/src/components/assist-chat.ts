@@ -80,21 +80,15 @@ export class AssistChat extends LitElement {
       display: flex;
       flex-direction: column;
       gap: var(--ha-space-3);
-      padding: var(--ha-space-4);
-      margin: var(--ha-space-4);
+      padding: var(--ha-space-4) var(--ha-space-4) var(--ha-space-2);
+      margin: var(--ha-space-2);
       background-color: var(--ha-color-surface);
       border-radius: var(--ha-border-radius-lg);
       box-shadow: var(--ha-shadow-lg);
     }
 
-    .input-row {
-      display: flex;
-      gap: var(--ha-space-3);
-      align-items: flex-end;
-    }
-
     ha-textarea {
-      flex: 1;
+      width: 100%;
       --wa-input-height-medium: auto;
     }
 
@@ -102,37 +96,21 @@ export class AssistChat extends LitElement {
       min-height: 42px;
       max-height: 150px;
       background-color: transparent;
-      border: none;
+      border: 1px solid var(--ha-color-border);
+      border-radius: var(--ha-border-radius-md);
+      outline: none;
+      box-shadow: none;
     }
 
     ha-textarea::part(textarea) {
       background-color: transparent;
-    }
-
-    .send-button {
-      flex-shrink: 0;
-      width: 42px;
-      height: 42px;
-      padding: 0;
-    }
-
-    .send-button::part(base) {
-      padding: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: transparent;
       border: none;
-      color: var(--ha-color-fill-primary-loud);
+      outline: none;
     }
 
-    .send-button:not([disabled])::part(base):hover {
-      background-color: transparent;
-      color: var(--ha-color-fill-primary);
-    }
-
-    .send-button wa-icon {
-      font-size: 1.5rem;
+    ha-textarea::part(textarea):focus {
+      outline: none;
+      box-shadow: none;
     }
 
     .pipeline-info {
@@ -155,6 +133,17 @@ export class AssistChat extends LitElement {
     /* Command Dropdown Styles */
     .input-wrapper {
       position: relative;
+    }
+
+    .command-backdrop {
+      position: absolute;
+      bottom: 100%;
+      left: 0;
+      right: 0;
+      height: 300px;
+      backdrop-filter: var(--ha-dialog-scrim-backdrop-filter);
+      border-radius: var(--ha-border-radius-md);
+      z-index: 5;
     }
 
     .command-dropdown {
@@ -305,6 +294,19 @@ export class AssistChat extends LitElement {
       font-size: var(--ha-font-size-sm);
       color: var(--ha-color-text-secondary);
     }
+
+    /* Dialog Theming */
+    wa-dialog::part(title) {
+      color: var(--ha-color-text-primary);
+    }
+
+    wa-dialog::part(header-actions) {
+      color: var(--ha-color-text-primary);
+    }
+
+    wa-dialog::part(close-button) {
+      color: var(--ha-color-text-primary);
+    }
   `;
 
   @state()
@@ -340,8 +342,7 @@ export class AssistChat extends LitElement {
   @state()
   private showHelpDialog: boolean = false;
 
-  @state()
-  private showClearDialog: boolean = false;
+
 
   @state()
   private availablePipelines: Array<{id: string, name: string, description?: string}> = [];
@@ -755,29 +756,19 @@ export class AssistChat extends LitElement {
    * Command Handlers
    */
   private handleSettingsCommand() {
-    window.location.hash = 'settings';
-    this.addSystemMessage('Navigating to settings...', 'success');
+    this.dispatchEvent(new CustomEvent('open-settings', { bubbles: true, composed: true }));
+    this.addSystemMessage('Opening settings...', 'success');
   }
 
   private handleClearCommand() {
     if (this.messages.length === 0) {
-      this.addSystemMessage('Conversation is already empty.', 'info');
       return;
     }
     
-    this.showClearDialog = true;
-  }
-
-  private handleCloseClearDialog() {
-    this.showClearDialog = false;
-  }
-
-  private handleConfirmClear() {
+    // Clear immediately without confirmation or message
     this.messages = [];
     this.conversationId = null;
     storage.clearConversation();
-    this.showClearDialog = false;
-    this.addSystemMessage('Conversation history cleared.', 'success');
   }
 
   private handleHelpCommand() {
@@ -900,6 +891,7 @@ export class AssistChat extends LitElement {
                 <h2>Welcome to Home Assistant Assist</h2>
                 <p>Start a conversation by typing a message below.</p>
                 <p>Try asking: "What time is it?" or "Turn on the living room lights"</p>
+                <p>Type <code>/</code> for commands (settings, clear, model, help)</p>
               </div>
             `
           : this.messages.map(
@@ -921,6 +913,7 @@ export class AssistChat extends LitElement {
       <div class="input-container">
         <div class="input-wrapper">
           ${this.showCommandDropdown ? html`
+            <div class="command-backdrop" @click="${() => this.showCommandDropdown = false}"></div>
             <div class="command-dropdown">
               ${this.commandSuggestions.map((suggestion, index) => html`
                 <div 
@@ -948,25 +941,14 @@ export class AssistChat extends LitElement {
             </div>
           ` : ''}
           
-          <div class="input-row">
-            <ha-textarea
-              placeholder="Type your message... (Enter to send, Shift+Enter for new line)"
-              .value="${this.inputValue}"
-              @input="${this.handleInput}"
-              ?disabled="${this.isLoading}"
-              rows="1"
-              resize="auto"
-            ></ha-textarea>
-            <ha-button
-              variant="text"
-              class="send-button"
-              @click="${this.sendMessage}"
-              ?disabled="${this.isLoading || !this.inputValue.trim()}"
-              title="Send message"
-            >
-              <wa-icon name="paper-plane"></wa-icon>
-            </ha-button>
-          </div>
+          <ha-textarea
+            placeholder="Type your message or / for commands..."
+            .value="${this.inputValue}"
+            @input="${this.handleInput}"
+            ?disabled="${this.isLoading}"
+            rows="1"
+            resize="auto"
+          ></ha-textarea>
         </div>
         
         ${this.pipelineName
@@ -1009,26 +991,6 @@ export class AssistChat extends LitElement {
         <div slot="footer">
           <ha-button variant="primary" @click="${this.handleCloseHelpDialog}">
             Close
-          </ha-button>
-        </div>
-      </wa-dialog>
-
-      <!-- Clear Confirmation Dialog -->
-      <wa-dialog
-        ?open="${this.showClearDialog}"
-        @wa-request-close="${this.handleCloseClearDialog}"
-        label="Clear Conversation"
-      >
-        <p style="margin: 0; color: var(--ha-color-text);">
-          Are you sure you want to clear the entire conversation history? This action cannot be undone.
-        </p>
-        
-        <div slot="footer">
-          <ha-button variant="secondary" @click="${this.handleCloseClearDialog}">
-            Cancel
-          </ha-button>
-          <ha-button variant="primary" @click="${this.handleConfirmClear}">
-            Clear
           </ha-button>
         </div>
       </wa-dialog>

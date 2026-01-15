@@ -29,6 +29,18 @@ export class HaSelect extends WaSelect {
           --sl-input-border-radius-medium: var(--ha-border-radius-md);
           --sl-spacing-medium: var(--ha-space-2) var(--ha-space-4);
           --sl-input-font-size-medium: var(--ha-font-size-m);
+          
+          /* Text and label colors */
+          --sl-input-color: var(--input-ink-color);
+          --sl-input-label-color: var(--input-label-ink-color);
+          --sl-input-help-text-color: var(--input-label-ink-color);
+          --sl-input-placeholder-color: var(--input-disabled-ink-color);
+          --sl-input-icon-color: var(--input-dropdown-icon-color);
+          
+          /* Dropdown panel (menu) styling */
+          --sl-panel-background-color: var(--ha-color-surface-raised);
+          --sl-panel-border-color: var(--ha-color-border-light);
+          --sl-color-neutral-0: var(--ha-color-surface-raised);
         }
         
         /* Focus styles */

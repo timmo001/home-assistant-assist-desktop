@@ -3,11 +3,9 @@ import { customElement, state } from 'lit/decorators.js';
 import { backendClient } from '../lib/backend-client';
 import { ThemeManager } from '../lib/theme';
 import './assist-chat';
-import './settings-page';
+import './settings-dialog';
 import '../elements/ha-button';
 import '@awesome.me/webawesome/dist/components/spinner/spinner.js';
-
-type Route = 'home' | 'settings';
 
 @customElement('app-root')
 export class AppRoot extends LitElement {
@@ -79,9 +77,6 @@ export class AppRoot extends LitElement {
   `;
 
   @state()
-  private currentRoute: Route = 'home';
-
-  @state()
   private isLoading: boolean = true;
 
   @state()
@@ -96,15 +91,14 @@ export class AppRoot extends LitElement {
   @state()
   private showReconnectBanner: boolean = false;
 
+  @state()
+  private showSettingsDialog: boolean = false;
+
   async connectedCallback() {
     super.connectedCallback();
     
     // Initialize theme manager
     ThemeManager.init();
-    
-    // Listen for hash changes for routing
-    window.addEventListener('hashchange', () => this.handleRouteChange());
-    this.handleRouteChange();
 
     // Initialize app
     await this.initialize();
@@ -157,10 +151,10 @@ export class AppRoot extends LitElement {
         this.hasSettings = false;
       }
 
-      // Step 4: Redirect appropriately
-      if (!this.hasSettings && this.currentRoute !== 'settings') {
-        // First run - redirect to settings
-        this.navigate('settings');
+      // Step 4: Show settings dialog if not configured
+      if (!this.hasSettings) {
+        // First run - show settings dialog
+        this.showSettingsDialog = true;
       }
 
       this.isLoading = false;
@@ -169,15 +163,6 @@ export class AppRoot extends LitElement {
       this.error = `Failed to initialize: ${error instanceof Error ? error.message : 'Unknown error'}`;
       this.isLoading = false;
     }
-  }
-
-  private handleRouteChange() {
-    const hash = window.location.hash.slice(1) || 'home';
-    this.currentRoute = hash as Route;
-  }
-
-  private navigate(route: Route) {
-    window.location.hash = route;
   }
 
   private async handleRetry() {
@@ -201,11 +186,24 @@ export class AppRoot extends LitElement {
   }
 
   /**
-   * Handle settings saved event - check if we should show home
+   * Handle settings saved event
    */
   private handleSettingsSaved() {
     this.hasSettings = true;
-    // Stay on settings page, user can navigate manually
+  }
+
+  /**
+   * Handle opening settings dialog
+   */
+  private handleOpenSettings() {
+    this.showSettingsDialog = true;
+  }
+
+  /**
+   * Handle closing settings dialog
+   */
+  private handleCloseSettings() {
+    this.showSettingsDialog = false;
   }
 
   render() {
@@ -244,32 +242,24 @@ export class AppRoot extends LitElement {
         : ''}
       
       <div class="content">
-        ${this.renderRoute()}
+        ${!this.hasSettings
+          ? html`
+              <div class="error-screen">
+                <h2>Configuration Required</h2>
+                <p>Please configure your Home Assistant connection first.</p>
+                <ha-button variant="primary" @click="${this.handleOpenSettings}">
+                  Open Settings
+                </ha-button>
+              </div>
+            `
+          : html`<assist-chat @open-settings="${this.handleOpenSettings}"></assist-chat>`}
       </div>
-    `;
-  }
 
-  private renderRoute() {
-    switch (this.currentRoute) {
-      case 'home':
-        if (!this.hasSettings) {
-          return html`
-            <div class="error-screen">
-              <h2>Configuration Required</h2>
-              <p>Please configure your Home Assistant connection first.</p>
-              <ha-button variant="primary" @click="${() => this.navigate('settings')}">
-                Go to Settings
-              </ha-button>
-            </div>
-          `;
-        }
-        return html`<assist-chat></assist-chat>`;
-      
-      case 'settings':
-        return html`<settings-page @settings-saved="${this.handleSettingsSaved}"></settings-page>`;
-      
-      default:
-        return html`<assist-chat></assist-chat>`;
-    }
+      <settings-dialog
+        ?open="${this.showSettingsDialog}"
+        @close="${this.handleCloseSettings}"
+        @settings-saved="${this.handleSettingsSaved}"
+      ></settings-dialog>
+    `;
   }
 }
