@@ -19,55 +19,6 @@ export class AppRoot extends LitElement {
       width: 100%;
     }
 
-    .header-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0 var(--ha-space-4);
-      background-color: var(--ha-color-surface);
-      border-bottom: 1px solid var(--ha-color-border);
-      min-height: 48px;
-    }
-
-    .pipeline-name {
-      color: var(--ha-color-text);
-      font-size: var(--ha-font-size-base);
-      font-weight: var(--ha-font-weight-medium);
-    }
-
-    .nav-tabs {
-      display: flex;
-      gap: var(--ha-space-2);
-    }
-
-    .nav-tabs button {
-      background: none;
-      border: none;
-      color: var(--ha-color-text-secondary);
-      font-size: var(--ha-font-size-base);
-      font-weight: var(--ha-font-weight-medium);
-      padding: var(--ha-space-3) var(--ha-space-4);
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-      transition: color 0.2s, border-color 0.2s;
-    }
-
-    .nav-tabs button:hover {
-      color: var(--ha-color-text);
-    }
-
-    .nav-tabs button.active {
-      color: var(--ha-color-fill-primary-loud);
-      border-bottom-color: var(--ha-color-fill-primary-loud);
-    }
-
-    .main-content {
-      flex: 1;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-
     .content {
       height: 100%;
       overflow: hidden;
@@ -145,9 +96,6 @@ export class AppRoot extends LitElement {
   @state()
   private showReconnectBanner: boolean = false;
 
-  @state()
-  private pipelineName: string = '';
-
   async connectedCallback() {
     super.connectedCallback();
     
@@ -157,9 +105,6 @@ export class AppRoot extends LitElement {
     // Listen for hash changes for routing
     window.addEventListener('hashchange', () => this.handleRouteChange());
     this.handleRouteChange();
-
-    // Listen for pipeline loaded event from chat
-    this.addEventListener('pipeline-loaded', this.handlePipelineLoaded as EventListener);
 
     // Initialize app
     await this.initialize();
@@ -235,10 +180,6 @@ export class AppRoot extends LitElement {
     window.location.hash = route;
   }
 
-  private handlePipelineLoaded(e: CustomEvent) {
-    this.pipelineName = e.detail.name;
-  }
-
   private async handleRetry() {
     this.showReconnectBanner = false;
     await this.initialize();
@@ -302,30 +243,8 @@ export class AppRoot extends LitElement {
           `
         : ''}
       
-      <div class="header-bar">
-        <div class="pipeline-name">
-          ${this.pipelineName || ''}
-        </div>
-        <nav class="nav-tabs">
-          <button
-            class="${this.currentRoute === 'home' ? 'active' : ''}"
-            @click="${() => this.navigate('home')}"
-          >
-            Chat
-          </button>
-          <button
-            class="${this.currentRoute === 'settings' ? 'active' : ''}"
-            @click="${() => this.navigate('settings')}"
-          >
-            Settings
-          </button>
-        </nav>
-      </div>
-      
-      <div class="main-content">
-        <div class="content">
-          ${this.renderRoute()}
-        </div>
+      <div class="content">
+        ${this.renderRoute()}
       </div>
     `;
   }

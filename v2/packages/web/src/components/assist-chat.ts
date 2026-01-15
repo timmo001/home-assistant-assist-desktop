@@ -6,6 +6,7 @@ import './message-bubble';
 import '../elements/ha-button';
 import '../elements/ha-textarea';
 import '@awesome.me/webawesome/dist/components/spinner/spinner.js';
+import '@awesome.me/webawesome/dist/components/icon/icon.js';
 
 interface Message {
   id: string;
@@ -60,10 +61,18 @@ export class AssistChat extends LitElement {
 
     .input-container {
       display: flex;
+      flex-direction: column;
       gap: var(--ha-space-3);
       padding: var(--ha-space-4);
+      margin: var(--ha-space-4);
       background-color: var(--ha-color-surface);
-      border-top: 1px solid var(--ha-color-border);
+      border-radius: var(--ha-border-radius-lg);
+      box-shadow: var(--ha-shadow-lg);
+    }
+
+    .input-row {
+      display: flex;
+      gap: var(--ha-space-3);
       align-items: flex-end;
     }
 
@@ -75,6 +84,45 @@ export class AssistChat extends LitElement {
     ha-textarea::part(base) {
       min-height: 42px;
       max-height: 150px;
+      background-color: transparent;
+      border: none;
+    }
+
+    ha-textarea::part(textarea) {
+      background-color: transparent;
+    }
+
+    .send-button {
+      flex-shrink: 0;
+      width: 42px;
+      height: 42px;
+      padding: 0;
+    }
+
+    .send-button::part(base) {
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: transparent;
+      border: none;
+      color: var(--ha-color-fill-primary-loud);
+    }
+
+    .send-button:not([disabled])::part(base):hover {
+      background-color: transparent;
+      color: var(--ha-color-fill-primary);
+    }
+
+    .send-button wa-icon {
+      font-size: 1.5rem;
+    }
+
+    .pipeline-info {
+      font-size: var(--ha-font-size-xs);
+      color: var(--ha-color-text-secondary);
+      padding: 0 var(--ha-space-2);
+      margin-left: var(--ha-space-2);
     }
 
     .thinking-indicator {
@@ -151,16 +199,9 @@ export class AssistChat extends LitElement {
         const pipeline = pipelinesResult.pipelines.find((p: any) => p.id === this.pipelineId);
         this.pipelineName = pipeline?.name || this.pipelineId;
         console.log('Using pipeline from settings:', this.pipelineName);
-        
-        // Notify parent of pipeline name
-        this.dispatchEvent(new CustomEvent('pipeline-loaded', {
-          detail: { name: this.pipelineName },
-          bubbles: true,
-          composed: true
-        }));
         return;
       }
-      
+
       // Fall back to auto-selection (preferred or first)
       this.pipelineId = pipelinesResult.preferredPipeline || pipelinesResult.pipelines[0].id;
       const pipeline = pipelinesResult.pipelines.find((p: any) => p.id === this.pipelineId);
@@ -168,15 +209,6 @@ export class AssistChat extends LitElement {
       console.log('Auto-selected pipeline:', this.pipelineName);
     } catch (error) {
       console.error('Failed to load pipeline:', error);
-    }
-    
-    // Notify parent of pipeline name
-    if (this.pipelineName) {
-      this.dispatchEvent(new CustomEvent('pipeline-loaded', {
-        detail: { name: this.pipelineName },
-        bubbles: true,
-        composed: true
-      }));
     }
   }
 
@@ -372,22 +404,33 @@ export class AssistChat extends LitElement {
       </div>
 
       <div class="input-container">
-        <ha-textarea
-          placeholder="Type your message... (Enter to send, Shift+Enter for new line)"
-          .value="${this.inputValue}"
-          @wa-input="${this.handleInput}"
-          @keydown="${this.handleKeyDown}"
-          ?disabled="${this.isLoading}"
-          rows="1"
-          resize="auto"
-        ></ha-textarea>
-        <ha-button
-          variant="primary"
-          @click="${this.sendMessage}"
-          ?disabled="${this.isLoading || !this.inputValue.trim()}"
-        >
-          Send
-        </ha-button>
+        <div class="input-row">
+          <ha-textarea
+            placeholder="Type your message... (Enter to send, Shift+Enter for new line)"
+            .value="${this.inputValue}"
+            @wa-input="${this.handleInput}"
+            @keydown="${this.handleKeyDown}"
+            ?disabled="${this.isLoading}"
+            rows="1"
+            resize="auto"
+          ></ha-textarea>
+          <ha-button
+            variant="text"
+            class="send-button"
+            @click="${this.sendMessage}"
+            ?disabled="${this.isLoading || !this.inputValue.trim()}"
+            title="Send message"
+          >
+            <wa-icon name="paper-plane"></wa-icon>
+          </ha-button>
+        </div>
+        ${this.pipelineName
+          ? html`
+              <div class="pipeline-info">
+                ${this.pipelineName}
+              </div>
+            `
+          : ''}
       </div>
     `;
   }
