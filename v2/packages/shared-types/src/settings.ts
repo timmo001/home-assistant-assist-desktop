@@ -10,12 +10,12 @@ export interface HomeAssistantSettings {
   /**
    * Long-lived access token for authentication
    */
-  access_token?: string;
+  accessToken: string;
   
   /**
-   * Whether to use SSL/TLS
+   * Selected pipeline ID for voice assistant
    */
-  ssl: boolean;
+  selectedPipelineId?: string;
 }
 
 /**

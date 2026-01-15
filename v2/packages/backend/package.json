@@ -10,6 +10,7 @@
     "build": "tsc"
   },
   "dependencies": {
+    "@ha-assist/shared-types": "workspace:*",
     "@hono/node-server": "^1.19.9",
     "bcrypt": "^6.0.0",
     "home-assistant-js-websocket": "^9.5.0",
