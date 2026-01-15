@@ -20,7 +20,7 @@ export class MessageBubble extends LitElement {
     .message {
       display: flex;
       flex-direction: column;
-      max-width: 80%;
+      max-width: 100%;
     }
 
     .message.user {
@@ -43,6 +43,14 @@ export class MessageBubble extends LitElement {
       word-wrap: break-word;
       white-space: pre-wrap;
       line-height: 1.5;
+    }
+
+    wa-card::part(base) {
+      padding: 0;
+    }
+
+    wa-card::part(body) {
+      padding: var(--ha-space-2);
     }
 
     .message.user wa-card {
