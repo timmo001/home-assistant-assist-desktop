@@ -290,7 +290,12 @@ Session tokens are UUIDs stored in memory. They expire after 30 days of inactivi
 
 ## Configuration File
 
-Settings are stored in `~/.ha-assist/config.json`:
+Settings are stored in platform-specific locations:
+- **Linux**: `~/.config/ha-assist/config.json`
+- **macOS**: `~/Library/Application Support/ha-assist/config.json`
+- **Windows**: `%APPDATA%/ha-assist/config.json`
+
+Example config structure:
 
 ```json
 {

@@ -1,10 +1,32 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
 import { join } from "path";
-import { homedir } from "os";
+import { homedir, platform } from "os";
 import type { HomeAssistantSettings } from "@ha-assist/shared-types";
 import { encrypt, decrypt, hashPassword, generatePassword } from "./crypto.js";
 
-const CONFIG_DIR = join(homedir(), ".ha-assist");
+/**
+ * Get the config directory based on OS standards
+ * - Linux: ~/.config/ha-assist
+ * - macOS: ~/Library/Application Support/ha-assist
+ * - Windows: %APPDATA%/ha-assist
+ */
+function getConfigDirectory(): string {
+  const home = homedir();
+  const plat = platform();
+
+  if (plat === "win32") {
+    // Windows: Use APPDATA environment variable or fallback
+    return join(process.env.APPDATA || join(home, "AppData", "Roaming"), "ha-assist");
+  } else if (plat === "darwin") {
+    // macOS: Use Application Support
+    return join(home, "Library", "Application Support", "ha-assist");
+  } else {
+    // Linux/Unix: Use XDG_CONFIG_HOME or fallback to ~/.config
+    return join(process.env.XDG_CONFIG_HOME || join(home, ".config"), "ha-assist");
+  }
+}
+
+const CONFIG_DIR = getConfigDirectory();
 const CONFIG_FILE = join(CONFIG_DIR, "config.json");
 const CONFIG_VERSION = 1;
 
