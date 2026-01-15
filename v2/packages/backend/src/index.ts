@@ -6,7 +6,8 @@ import { startServer } from "./server.js";
 import { getConfigPath } from "./config.js";
 import { unlinkSync, existsSync } from "fs";
 
-const argv = await yargs(hideBin(process.argv))
+// Parse arguments and run async command handlers
+yargs(hideBin(process.argv))
   .option("reset-password", {
     type: "boolean",
     description: "Reset the server password and regenerate config",
@@ -26,7 +27,8 @@ const argv = await yargs(hideBin(process.argv))
     async (argv) => {
       console.log("Starting backend server...");
       const port = await startServer(argv.port);
-      console.log(`Backend server running on http://localhost:${port}`);
+      console.log(`\nBackend server running on http://localhost:${port}`);
+      console.log("Press Ctrl+C to stop\n");
     }
   )
   .command(
@@ -43,7 +45,8 @@ const argv = await yargs(hideBin(process.argv))
     async (argv) => {
       console.log("Starting backend + web UI...");
       const port = await startServer(argv.port, true);
-      console.log(`Server running on http://localhost:${port}`);
+      console.log(`\nServer running on http://localhost:${port}`);
+      console.log("Press Ctrl+C to stop\n");
     }
   )
   .command(
@@ -71,7 +74,8 @@ const argv = await yargs(hideBin(process.argv))
       console.log("Web UI with HMR: Start separately with 'cd packages/web && bun run dev'");
       console.log("The web dev server will proxy API requests to this backend.\n");
       const port = await startServer(argv.port, false);
-      console.log(`Backend API running on http://localhost:${port}`);
+      console.log(`\nBackend API running on http://localhost:${port}`);
+      console.log("Press Ctrl+C to stop\n");
     }
   )
   .demandCommand(1, "You must specify a command")

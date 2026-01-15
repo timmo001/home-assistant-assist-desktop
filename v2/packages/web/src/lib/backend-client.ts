@@ -85,8 +85,10 @@ export class BackendClient {
   private maxRetries = 3;
   private retryDelay = 1000; // ms
 
-  constructor(baseUrl: string = 'http://localhost:3000') {
-    this.baseUrl = baseUrl;
+  constructor(baseUrl?: string) {
+    // Default to empty string for relative URLs (works with Vite proxy in dev)
+    // Desktop wrapper will inject the actual backend URL
+    this.baseUrl = baseUrl || '';
     
     // Try to load token from storage
     const storedToken = storage.getToken();

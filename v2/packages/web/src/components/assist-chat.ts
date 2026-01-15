@@ -187,12 +187,34 @@ export class AssistChat extends LitElement {
   @state()
   private conversationId: string | null = null;
 
+  @state()
+  private pipelineId: string | null = null;
+
   @query('.messages')
   private messagesContainer!: HTMLElement;
 
   async connectedCallback() {
     super.connectedCallback();
     await this.loadHistory();
+    await this.loadPipeline();
+  }
+
+  /**
+   * Load available pipelines and select the first one (or preferred)
+   */
+  private async loadPipeline() {
+    try {
+      const result = await backendClient.getPipelines();
+      
+      if (result.success && result.pipelines.length > 0) {
+        // Use preferred pipeline if available, otherwise first one
+        this.pipelineId = result.preferredPipeline || result.pipelines[0].id;
+      } else {
+        console.error('No pipelines available');
+      }
+    } catch (error) {
+      console.error('Failed to load pipelines:', error);
+    }
   }
 
   /**
@@ -273,8 +295,14 @@ export class AssistChat extends LitElement {
     this.isLoading = true;
 
     try {
+      // Check if pipeline is loaded
+      if (!this.pipelineId) {
+        throw new Error('No pipeline available. Please check your Home Assistant configuration.');
+      }
+
       const result = await backendClient.runPipeline({
         text: messageContent,
+        pipelineId: this.pipelineId,
         conversationId: this.conversationId,
       });
 
