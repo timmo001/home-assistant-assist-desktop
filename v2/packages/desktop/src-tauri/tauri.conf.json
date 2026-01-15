@@ -13,6 +13,7 @@
     "windows": [
       {
         "label": "main",
+        "create": false,
         "title": "HA Assist Desktop",
         "url": "/",
         "width": 800,

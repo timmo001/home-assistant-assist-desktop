@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use tauri::WebviewWindowBuilder;
 
 #[derive(Clone, Serialize, Deserialize)]
 struct BackendReadyData {
@@ -10,7 +11,7 @@ struct BackendReadyData {
 /// Tauri command to ensure backend is ready
 /// 
 /// TODO: This is a stub implementation. In the future, this will:
-/// - Spawn the Python backend as a sidecar process
+/// - Spawn the backend as a sidecar process
 /// - Wait for the backend to be ready
 /// - Return the backend URL and password
 #[tauri::command]
@@ -30,6 +31,23 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![ensure_backend_ready])
+        .setup(|app| {
+            // Create window programmatically to avoid display errors in headless environments
+            let config = app
+                .config()
+                .app
+                .windows
+                .iter()
+                .find(|w| w.label == "main")
+                .expect("main window config missing");
+
+            let _window = WebviewWindowBuilder::from_config(app, config)
+                .expect("Failed to create window builder from config")
+                .build()
+                .expect("Failed to create window");
+
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
