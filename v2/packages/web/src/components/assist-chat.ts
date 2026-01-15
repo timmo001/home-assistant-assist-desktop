@@ -152,20 +152,6 @@ export class AssistChat extends LitElement {
       color: var(--ha-color-text-secondary);
     }
 
-    .actions-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: var(--ha-space-3) var(--ha-space-4);
-      background-color: var(--ha-color-surface);
-      border-bottom: 1px solid var(--ha-color-border);
-    }
-
-    .actions-bar-left {
-      display: flex;
-      gap: var(--ha-space-3);
-    }
-
     /* Command Dropdown Styles */
     .input-wrapper {
       position: relative;
@@ -355,6 +341,9 @@ export class AssistChat extends LitElement {
   private showHelpDialog: boolean = false;
 
   @state()
+  private showClearDialog: boolean = false;
+
+  @state()
   private availablePipelines: Array<{id: string, name: string, description?: string}> = [];
 
   @state()
@@ -493,9 +482,9 @@ export class AssistChat extends LitElement {
     }
   }
 
-  private handleInput(e: CustomEvent) {
+  private handleInput(e: Event) {
     const textarea = e.target as any;
-    this.inputValue = textarea.value;
+    this.inputValue = textarea.value || '';
     
     // Check if input starts with '/'
     if (this.inputValue.startsWith('/') && this.inputValue.length > 1) {
@@ -726,12 +715,19 @@ export class AssistChat extends LitElement {
       return;
     }
     
-    if (confirm('Are you sure you want to clear the entire conversation history?')) {
-      this.messages = [];
-      this.conversationId = null;
-      storage.clearConversation();
-      this.addSystemMessage('Conversation history cleared.', 'success');
-    }
+    this.showClearDialog = true;
+  }
+
+  private handleCloseClearDialog() {
+    this.showClearDialog = false;
+  }
+
+  private handleConfirmClear() {
+    this.messages = [];
+    this.conversationId = null;
+    storage.clearConversation();
+    this.showClearDialog = false;
+    this.addSystemMessage('Conversation history cleared.', 'success');
   }
 
   private handleHelpCommand() {
@@ -845,34 +841,8 @@ export class AssistChat extends LitElement {
     this.showPipelineDialog = false;
   }
 
-  private handleClearHistory() {
-    if (confirm('Are you sure you want to clear the entire conversation history?')) {
-      this.messages = [];
-      this.conversationId = null;
-      storage.clearConversation();
-    }
-  }
-
   render() {
     return html`
-      ${this.messages.length > 0
-        ? html`
-            <div class="actions-bar">
-              <div class="actions-bar-left">
-                <ha-button
-                  variant="secondary"
-                  size="small"
-                  @click="${this.handleClearHistory}"
-                  ?disabled="${this.isLoading}"
-                  title="Clear conversation history"
-                >
-                  Clear History
-                </ha-button>
-              </div>
-            </div>
-          `
-        : ''}
-
       <div class="messages">
         ${this.messages.length === 0 && !this.isLoading
           ? html`
@@ -932,7 +902,7 @@ export class AssistChat extends LitElement {
             <ha-textarea
               placeholder="Type your message... (Enter to send, Shift+Enter for new line)"
               .value="${this.inputValue}"
-              @wa-input="${this.handleInput}"
+              @input="${this.handleInput}"
               ?disabled="${this.isLoading}"
               rows="1"
               resize="auto"
@@ -989,6 +959,26 @@ export class AssistChat extends LitElement {
         <div slot="footer">
           <ha-button variant="primary" @click="${this.handleCloseHelpDialog}">
             Close
+          </ha-button>
+        </div>
+      </wa-dialog>
+
+      <!-- Clear Confirmation Dialog -->
+      <wa-dialog
+        ?open="${this.showClearDialog}"
+        @wa-request-close="${this.handleCloseClearDialog}"
+        label="Clear Conversation"
+      >
+        <p style="margin: 0; color: var(--ha-color-text);">
+          Are you sure you want to clear the entire conversation history? This action cannot be undone.
+        </p>
+        
+        <div slot="footer">
+          <ha-button variant="secondary" @click="${this.handleCloseClearDialog}">
+            Cancel
+          </ha-button>
+          <ha-button variant="primary" @click="${this.handleConfirmClear}">
+            Clear
           </ha-button>
         </div>
       </wa-dialog>
