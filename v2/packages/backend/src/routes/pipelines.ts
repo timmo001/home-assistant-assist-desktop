@@ -129,15 +129,28 @@ pipelineRoutes.post("/run-text", async (c) => {
           },
           (event: PipelineRunEvent) => {
             events.push(event);
+            
+            // Debug logging
+            console.log(`[Pipeline Event] ${event.type}:`, JSON.stringify(event.data, null, 2));
 
-            // Capture the response text
-            if (event.type === "intent-end" && event.data?.response?.speech?.plain) {
-              response = event.data.response.speech.plain.speech;
+            // Capture the response text from intent-end event
+            if (event.type === "intent-end") {
+              // Try intent_output.response.speech.plain.speech first (conversation agent)
+              if (event.data?.intent_output?.response?.speech?.plain?.speech) {
+                response = event.data.intent_output.response.speech.plain.speech;
+                console.log(`[Response Captured from intent_output] ${response}`);
+              }
+              // Fallback to response.speech.plain.speech (legacy format)
+              else if (event.data?.response?.speech?.plain?.speech) {
+                response = event.data.response.speech.plain.speech;
+                console.log(`[Response Captured from response] ${response}`);
+              }
             }
 
             // Pipeline completed
             if (event.type === "run-end") {
               clearTimeout(timeoutId);
+              console.log(`[Pipeline Complete] Final response: ${response}`);
               resolve({ response, events });
             }
 
