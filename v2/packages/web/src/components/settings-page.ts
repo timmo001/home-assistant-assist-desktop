@@ -47,11 +47,17 @@ export class SettingsPage extends LitElement {
       border-radius: var(--radius-sm);
       background-color: var(--color-background);
       font-size: var(--font-size-base);
+      box-sizing: border-box;
     }
 
     .form-group input:focus {
       outline: none;
       border-color: var(--color-primary);
+    }
+
+    .form-group input:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
 
     .form-group .help-text {
@@ -64,6 +70,7 @@ export class SettingsPage extends LitElement {
       display: flex;
       gap: var(--spacing-md);
       margin-top: var(--spacing-xl);
+      flex-wrap: wrap;
     }
 
     .button {
@@ -71,6 +78,7 @@ export class SettingsPage extends LitElement {
       border-radius: var(--radius-md);
       font-weight: 600;
       transition: all var(--transition-fast);
+      cursor: pointer;
     }
 
     .button.primary {
@@ -82,6 +90,17 @@ export class SettingsPage extends LitElement {
       background-color: var(--color-primary-dark);
     }
 
+    .button.secondary {
+      background-color: transparent;
+      color: var(--color-primary);
+      border: 1px solid var(--color-primary);
+    }
+
+    .button.secondary:hover:not(:disabled) {
+      background-color: var(--color-primary);
+      color: white;
+    }
+
     .button:disabled {
       opacity: 0.5;
       cursor: not-allowed;
@@ -91,21 +110,54 @@ export class SettingsPage extends LitElement {
       padding: var(--spacing-md);
       border-radius: var(--radius-sm);
       margin-top: var(--spacing-md);
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .status-message.success {
-      background-color: var(--color-success);
+      background-color: #10b981;
       color: white;
     }
 
     .status-message.error {
-      background-color: var(--color-error);
+      background-color: #ef4444;
       color: white;
+    }
+
+    .status-message.info {
+      background-color: #3b82f6;
+      color: white;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: var(--spacing-sm);
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
   `;
 
   @state()
-  private homeAssistantUrl: string = '';
+  private url: string = '';
 
   @state()
   private accessToken: string = '';
@@ -114,7 +166,10 @@ export class SettingsPage extends LitElement {
   private isLoading: boolean = false;
 
   @state()
-  private statusMessage: { type: 'success' | 'error'; text: string } | null = null;
+  private isTesting: boolean = false;
+
+  @state()
+  private statusMessage: { type: 'success' | 'error' | 'info'; text: string } | null = null;
 
   async connectedCallback() {
     super.connectedCallback();
@@ -124,9 +179,14 @@ export class SettingsPage extends LitElement {
   private async loadSettings() {
     try {
       this.isLoading = true;
-      const settings = await backendClient.getSettings();
-      this.homeAssistantUrl = settings.homeAssistantUrl || '';
-      this.accessToken = settings.accessToken || '';
+      const result = await backendClient.getSettings();
+      
+      if (result.settings) {
+        this.url = result.settings.url || '';
+        // Access token will be masked from backend (e.g., "test...jkl")
+        // Don't populate it - let user re-enter if they want to change
+        this.accessToken = '';
+      }
     } catch (error) {
       console.error('Failed to load settings:', error);
       // Silently fail - settings might not be configured yet
@@ -137,36 +197,135 @@ export class SettingsPage extends LitElement {
 
   private handleUrlInput(e: Event) {
     const input = e.target as HTMLInputElement;
-    this.homeAssistantUrl = input.value;
+    this.url = input.value.trim();
+    // Clear status message on input
+    this.statusMessage = null;
   }
 
   private handleTokenInput(e: Event) {
     const input = e.target as HTMLInputElement;
-    this.accessToken = input.value;
+    this.accessToken = input.value.trim();
+    // Clear status message on input
+    this.statusMessage = null;
+  }
+
+  private validateUrl(url: string): boolean {
+    try {
+      const parsed = new URL(url);
+      // Must be HTTP or HTTPS
+      return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  }
+
+  private async handleTestConnection() {
+    this.statusMessage = null;
+
+    // Validation
+    if (!this.url) {
+      this.statusMessage = {
+        type: 'error',
+        text: 'Please enter a Home Assistant URL',
+      };
+      return;
+    }
+
+    if (!this.validateUrl(this.url)) {
+      this.statusMessage = {
+        type: 'error',
+        text: 'Invalid URL format. Must start with http:// or https://',
+      };
+      return;
+    }
+
+    if (!this.accessToken) {
+      this.statusMessage = {
+        type: 'error',
+        text: 'Please enter an access token',
+      };
+      return;
+    }
+
+    try {
+      this.isTesting = true;
+      const result = await backendClient.testConnection(this.url, this.accessToken);
+
+      if (result.success) {
+        this.statusMessage = {
+          type: 'success',
+          text: result.message || 'Connection successful!',
+        };
+      } else {
+        this.statusMessage = {
+          type: 'error',
+          text: result.error || 'Connection failed',
+        };
+      }
+    } catch (error) {
+      this.statusMessage = {
+        type: 'error',
+        text: `Connection test failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      };
+    } finally {
+      this.isTesting = false;
+    }
   }
 
   private async handleSave() {
     this.statusMessage = null;
 
-    if (!this.homeAssistantUrl || !this.accessToken) {
+    // Validation
+    if (!this.url) {
       this.statusMessage = {
         type: 'error',
-        text: 'Please fill in all required fields.',
+        text: 'Please enter a Home Assistant URL',
+      };
+      return;
+    }
+
+    if (!this.validateUrl(this.url)) {
+      this.statusMessage = {
+        type: 'error',
+        text: 'Invalid URL format. Must start with http:// or https://',
+      };
+      return;
+    }
+
+    if (!this.accessToken) {
+      this.statusMessage = {
+        type: 'error',
+        text: 'Please enter an access token',
       };
       return;
     }
 
     try {
       this.isLoading = true;
-      await backendClient.updateSettings({
-        homeAssistantUrl: this.homeAssistantUrl,
+      const result = await backendClient.updateSettings({
+        url: this.url,
         accessToken: this.accessToken,
       });
 
-      this.statusMessage = {
-        type: 'success',
-        text: 'Settings saved successfully!',
-      };
+      if (result.success) {
+        this.statusMessage = {
+          type: 'success',
+          text: 'Settings saved successfully! You can now use the chat.',
+        };
+
+        // Emit event to parent
+        this.dispatchEvent(new CustomEvent('settings-saved'));
+
+        // Redirect to chat after 2 seconds
+        setTimeout(() => {
+          window.location.hash = 'home';
+        }, 2000);
+      } else {
+        this.statusMessage = {
+          type: 'error',
+          text: result.error || 'Failed to save settings',
+        };
+      }
     } catch (error) {
       this.statusMessage = {
         type: 'error',
@@ -187,44 +346,54 @@ export class SettingsPage extends LitElement {
 
         <form @submit="${(e: Event) => e.preventDefault()}">
           <div class="form-group">
-            <label for="ha-url">Home Assistant URL</label>
+            <label for="ha-url">Home Assistant URL *</label>
             <input
               id="ha-url"
               type="url"
               placeholder="http://homeassistant.local:8123"
-              .value="${this.homeAssistantUrl}"
+              .value="${this.url}"
               @input="${this.handleUrlInput}"
-              ?disabled="${this.isLoading}"
+              ?disabled="${this.isLoading || this.isTesting}"
               required
             />
             <div class="help-text">
-              The URL of your Home Assistant instance
+              The full URL of your Home Assistant instance (e.g., http://192.168.1.100:8123)
             </div>
           </div>
 
           <div class="form-group">
-            <label for="access-token">Access Token</label>
+            <label for="access-token">Long-Lived Access Token *</label>
             <input
               id="access-token"
               type="password"
               placeholder="Enter your long-lived access token"
               .value="${this.accessToken}"
               @input="${this.handleTokenInput}"
-              ?disabled="${this.isLoading}"
+              ?disabled="${this.isLoading || this.isTesting}"
               required
             />
             <div class="help-text">
-              Create a long-lived access token in Home Assistant under Profile
+              Create a long-lived access token in Home Assistant: Profile → Security → Long-Lived Access Tokens
             </div>
           </div>
 
           <div class="actions">
             <button
-              class="button primary"
-              @click="${this.handleSave}"
-              ?disabled="${this.isLoading}"
+              class="button secondary"
+              type="button"
+              @click="${this.handleTestConnection}"
+              ?disabled="${this.isLoading || this.isTesting || !this.url || !this.accessToken}"
             >
-              ${this.isLoading ? 'Saving...' : 'Save Settings'}
+              ${this.isTesting ? html`<span class="spinner"></span>Testing...` : 'Test Connection'}
+            </button>
+            
+            <button
+              class="button primary"
+              type="button"
+              @click="${this.handleSave}"
+              ?disabled="${this.isLoading || this.isTesting || !this.url || !this.accessToken}"
+            >
+              ${this.isLoading ? html`<span class="spinner"></span>Saving...` : 'Save Settings'}
             </button>
           </div>
 
@@ -240,8 +409,3 @@ export class SettingsPage extends LitElement {
     `;
   }
 }
-
-// TODO: Add connection test button
-// TODO: Add more configuration options (pipeline selection, voice settings, etc.)
-// TODO: Add validation for URL format
-// TODO: Add support for discovering Home Assistant instances on the network

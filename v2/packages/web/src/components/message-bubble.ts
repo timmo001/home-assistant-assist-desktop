@@ -18,43 +18,67 @@ export class MessageBubble extends LitElement {
     .message {
       display: flex;
       flex-direction: column;
-      max-width: 70%;
-      padding: var(--spacing-md);
-      border-radius: var(--radius-md);
-      word-wrap: break-word;
-      box-shadow: var(--shadow-sm);
+      max-width: 80%;
     }
 
     .message.user {
       align-self: flex-end;
-      background-color: var(--color-primary);
-      color: white;
-      margin-left: auto;
+      align-items: flex-end;
     }
 
     .message.assistant {
       align-self: flex-start;
-      background-color: var(--color-surface);
-      color: var(--color-text);
+      align-items: flex-start;
     }
 
     .message.error {
       align-self: center;
-      background-color: var(--color-error);
-      color: white;
+      align-items: center;
       max-width: 90%;
     }
 
-    .message-content {
-      margin: 0;
+    .bubble {
+      padding: var(--spacing-sm) var(--spacing-md);
+      border-radius: var(--radius-md);
+      word-wrap: break-word;
+      white-space: pre-wrap;
       line-height: 1.5;
     }
 
-    .message-timestamp {
+    .message.user .bubble {
+      background-color: var(--color-primary);
+      color: white;
+      border-bottom-right-radius: var(--radius-xs);
+    }
+
+    .message.assistant .bubble {
+      background-color: var(--color-surface);
+      color: var(--color-text);
+      border-bottom-left-radius: var(--radius-xs);
+      border: 1px solid var(--color-border);
+    }
+
+    .message.error .bubble {
+      background-color: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fca5a5;
+      text-align: center;
       font-size: var(--font-size-sm);
-      opacity: 0.7;
+    }
+
+    .timestamp {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-secondary);
       margin-top: var(--spacing-xs);
-      text-align: right;
+      padding: 0 var(--spacing-xs);
+    }
+
+    .role-label {
+      font-size: var(--font-size-xs);
+      font-weight: 600;
+      color: var(--color-text-secondary);
+      margin-bottom: var(--spacing-xs);
+      padding: 0 var(--spacing-xs);
     }
   `;
 
@@ -62,7 +86,30 @@ export class MessageBubble extends LitElement {
   message!: Message;
 
   private formatTimestamp(date: Date): string {
-    return date.toLocaleTimeString([], {
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+
+    // Less than 1 minute
+    if (diff < 60000) {
+      return 'Just now';
+    }
+
+    // Less than 1 hour
+    if (diff < 3600000) {
+      const minutes = Math.floor(diff / 60000);
+      return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`;
+    }
+
+    // Less than 24 hours
+    if (diff < 86400000) {
+      const hours = Math.floor(diff / 3600000);
+      return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
+    }
+
+    // More than 24 hours - show date and time
+    return date.toLocaleString([], {
+      month: 'short',
+      day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
     });
@@ -75,10 +122,18 @@ export class MessageBubble extends LitElement {
 
     return html`
       <div class="message ${this.message.role}">
-        <div class="message-content">
+        ${this.message.role === 'assistant'
+          ? html`<div class="role-label">Assistant</div>`
+          : ''}
+        ${this.message.role === 'error'
+          ? html`<div class="role-label">Error</div>`
+          : ''}
+        
+        <div class="bubble">
           ${this.message.content}
         </div>
-        <div class="message-timestamp">
+        
+        <div class="timestamp">
           ${this.formatTimestamp(this.message.timestamp)}
         </div>
       </div>
