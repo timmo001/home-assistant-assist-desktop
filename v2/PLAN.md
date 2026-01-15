@@ -1,308 +1,355 @@
 # Home Assistant Assist Desktop v2 - Development Plan
 
-## Technical Decisions
+**Last Updated:** January 15, 2026  
+**Current Status:** Phase 2 Complete ✅ → See STATUS.md for details  
+**Completion History:** See HISTORY.md for Phase 1 & 2 reports
 
-### Infrastructure
-- **Encryption:** bcrypt for passwords + Node crypto (AES-256-GCM) for config data
+---
+
+## Project Overview
+
+### Architecture Decisions
+- **Encryption:** bcrypt for passwords + AES-256-GCM for config data
 - **Auth:** UUID tokens in memory Map (single-user desktop app)
-- **HA Connection:** WebSocket proxy (Web → Backend WS → HA WS)
-- **Testing:** Phase 1 includes curl/Postman testing before UI
-- **Backend Bundling:** `bun build --compile` for standalone binary (~90MB)
+- **HA Connection:** Direct WebSocket via backend (no proxy needed for Phase 2)
+- **Backend Bundling:** `bun build --compile` for standalone binary (~50MB)
+- **Deployment:** Backend → Web UI → Desktop wrapper
 
-### Feature Priority (from user input)
-1. Settings UI
-2. Global shortcuts
-3. HA connection
-4. Text chat
-5. Pipeline running
-6. Voice recording (deferred to Phase 4)
+### Completed Phases ✅
+- **Phase 1:** Backend API with auth, encryption, settings, pipeline execution
+- **Phase 2:** Web UI with chat interface, settings page, localStorage persistence
 
-### Deployment Strategy
-- Start with backend API foundation
-- Web UI uses backend for all HA communication
-- Desktop spawns backend as sidecar binary
+See HISTORY.md for detailed completion reports.
 
 ---
 
-## Phase 1: Backend API Foundation 🎯 **CURRENT**
+## Phase 2.5: Pipeline Selection (Optional Enhancement)
 
-### 1.1 Crypto & Config Management
-- [x] Basic config file management exists
-- [ ] Add AES-256-GCM encryption for sensitive fields
-- [ ] Use bcrypt for password hashing
-- [ ] Create `~/.ha-assist/config.json` structure:
-  ```json
-  {
-    "version": 1,
-    "server": {
-      "passwordHash": "bcrypt_hash_here"
-    },
-    "homeAssistant": {
-      "url": "encrypted_data",
-      "accessToken": "encrypted_data",
-      "selectedPipelineId": "encrypted_data"
-    }
-  }
-  ```
-- [ ] Config migration system
-- [ ] Validation helpers
+**Priority:** Low  
+**Estimated Time:** 1-2 hours  
+**Status:** Not started
 
-**Files:**
-- `packages/backend/src/crypto.ts` (new)
-- `packages/backend/src/config.ts` (expand)
+### Features
+- [ ] Add pipeline selection dropdown to settings page
+- [ ] Fetch available pipelines from `GET /api/pipelines`
+- [ ] Save preferred pipeline ID in settings
+- [ ] Use selected pipeline in chat interface
+- [ ] Show pipeline name in chat header
+- [ ] Default to first available if none selected
 
-### 1.2 Authentication System
-- [ ] Generate random password on first run (if none exists)
-- [ ] Store bcrypt hash in config
-- [ ] UUID-based session tokens in memory Map
-- [ ] Auth middleware for protected routes
-- [ ] Endpoints:
-  - `POST /auth/login` - Accept password, return token
-  - `POST /auth/logout` - Clear token
-  - `GET /auth/status` - Check if authenticated
-  - `GET /auth/password` - Get current password (for desktop sidecar)
+**Files to Modify:**
+- `packages/web/src/components/settings-page.ts` - Add pipeline dropdown
+- `packages/web/src/components/assist-chat.ts` - Use selected pipeline
+- `packages/backend/src/routes/settings.ts` - Store pipeline preference
 
-**Files:**
-- `packages/backend/src/middleware/auth.ts` (new)
-- `packages/backend/src/routes/auth.ts` (complete stubs)
-
-### 1.3 Settings Management
-- [ ] CRUD operations for HA settings
-- [ ] Encrypt/decrypt on save/load
-- [ ] Test HA connection endpoint
-- [ ] Endpoints:
-  - `GET /api/settings` - Get current settings (decrypted)
-  - `PUT /api/settings` - Save settings (encrypts before storing)
-  - `POST /api/settings/test-connection` - Test HA URL + token
-
-**Files:**
-- `packages/backend/src/routes/settings.ts` (expand)
-
-### 1.4 Home Assistant WebSocket Proxy
-- [ ] WebSocket endpoint at `/api/ha/ws`
-- [ ] Authenticate client connection (check session token)
-- [ ] Connect to HA WebSocket using stored credentials
-- [ ] Proxy messages bidirectionally:
-  - Client → Backend → HA
-  - HA → Backend → Client
-- [ ] Handle HA disconnection/reconnection
-- [ ] Error handling and client notifications
-
-**Files:**
-- `packages/backend/src/routes/ha.ts` (implement WebSocket proxy)
-- Uses existing `packages/backend/src/ha/client.ts`
-
-### 1.5 Pipeline Execution API
-- [ ] Endpoints for pipeline operations:
-  - `GET /api/pipelines` - List available pipelines
-  - `POST /api/pipeline/run-text` - Execute pipeline with text input
-  - `POST /api/pipeline/run-audio` - Upload audio (stub for Phase 4)
-- [ ] Use HA client to execute pipelines
-- [ ] Return results and events
-
-**Files:**
-- `packages/backend/src/routes/pipelines.ts` (new)
-
-### 1.6 CLI Commands
-- [x] `ha-assist backend` - Works!
-- [ ] `ha-assist web` - Serve static web UI + API on same port
-- [ ] `ha-assist dev` - Backend + web with HMR (vite proxy)
-- [ ] Add `--port` flag support
-- [ ] Add `--reset-password` flag
-
-**Files:**
-- `packages/backend/src/index.ts` (expand)
-- `packages/backend/src/server.ts` (add static file serving)
-
-### 1.7 Testing Phase 1
-- [ ] Create `test-backend.sh` script with curl commands
-- [ ] Test auth flow (login, use token, logout)
-- [ ] Test settings CRUD with encryption
-- [ ] Test HA connection (if HA instance available)
-- [ ] Test WebSocket proxy
-- [ ] Document API endpoints in `API.md`
-
-**Files:**
-- `packages/backend/test-backend.sh` (new)
-- `packages/backend/API.md` (new)
+**Benefits:**
+- Users can choose specific pipelines (e.g., different languages, models)
+- Better control over conversation behavior
+- Preparation for advanced features
 
 ---
 
-## Phase 2: Web UI Core
+## Phase 3: Desktop Integration 🎯 **NEXT PHASE**
 
-### 2.1 Backend Client Library
-- [ ] Complete `BackendClient` class
-- [ ] Auth methods (login, logout, checkStatus)
-- [ ] Settings methods (get, save, testConnection)
-- [ ] WebSocket connection for HA proxy
-- [ ] Pipeline execution methods
-- [ ] Error handling and retry logic
-
-**Files:**
-- `packages/web/src/lib/backend-client.ts` (expand)
-
-### 2.2 Settings Page (Priority #1)
-- [ ] Form fields:
-  - HA URL input with validation
-  - Access token input (password field)
-  - Pipeline selection dropdown
-  - Test connection button
-- [ ] Show connection status (success/error)
-- [ ] Save/load from backend
-- [ ] Loading states
-- [ ] Error display
-
-**Files:**
-- `packages/web/src/components/settings-page.ts` (complete)
-
-### 2.3 Chat Interface (Text-Only, No Streaming)
-- [ ] Text input field with send button
-- [ ] Message history display (user + assistant)
-- [ ] Pipeline execution:
-  - Show "thinking..." while processing
-  - Display complete response when done
-  - Plain text only (no markdown)
-- [ ] Error handling (show errors in chat)
-- [ ] Clear conversation button
-- [ ] Settings link
-
-**Files:**
-- `packages/web/src/components/assist-chat.ts` (implement)
-- `packages/web/src/components/message-bubble.ts` (text rendering)
-
-### 2.4 App Structure
-- [ ] First-run detection (redirect to settings if no HA config)
-- [ ] Navigation between chat and settings
-- [ ] Loading screen during backend connection
-- [ ] Responsive layout
-
-**Files:**
-- `packages/web/src/components/app-root.ts` (expand)
-- `packages/web/src/styles/global.css` (styling)
-
-### 2.5 Build & Deploy
-- [ ] Production build works
-- [ ] Backend can serve web UI via `ha-assist web`
-- [ ] Dev mode with HMR via `ha-assist dev`
-
----
-
-## Phase 3: Desktop Integration
+**Priority:** High  
+**Estimated Time:** 4-6 hours  
+**Status:** Not started
 
 ### 3.1 Backend Sidecar Spawning
-- [ ] Build backend with `bun build --compile`
-- [ ] Copy binary to `packages/desktop/src-tauri/sidecars/`
-- [ ] Configure `tauri.conf.json` externalBin
-- [ ] Implement sidecar spawning in Rust:
-  - Generate random password
-  - Spawn backend with password env var
-  - Wait for health check (retry with timeout)
-  - Store backend URL + password
-  - Kill on app exit
-- [ ] Return backend data to frontend
+
+**Implementation:**
+- [ ] Build backend with `bun build --compile` (creates standalone ~50MB binary)
+- [ ] Copy binary to `packages/desktop/src-tauri/sidecars/ha-assist-backend`
+- [ ] Configure `tauri.conf.json` externalBin section
+- [ ] Implement sidecar spawning in Rust (`lib.rs`):
+  - Generate cryptographically secure random password
+  - Spawn backend process with password in env var
+  - Wait for health check at `http://127.0.0.1:<PORT>/health`
+  - Retry with timeout (5 attempts, 500ms delay)
+  - Store backend URL + password for frontend injection
+  - Register cleanup handler (kill backend on app exit)
+- [ ] Inject backend data into webview via `window.__HA_ASSIST__`
+- [ ] Handle backend crashes (auto-restart with exponential backoff)
 
 **Files:**
-- `packages/desktop/src-tauri/src/lib.rs` (implement `ensure_backend_ready`)
-- `packages/desktop/src-tauri/tauri.conf.json` (add externalBin)
-- `packages/backend/package.json` (add compile script)
+- `packages/desktop/src-tauri/src/lib.rs` - Implement `ensure_backend_ready` command
+- `packages/desktop/src-tauri/tauri.conf.json` - Add externalBin configuration
+- `packages/backend/package.json` - Add `build:compile` script
+- `packages/desktop/src-tauri/Cargo.toml` - Add `rand` dependency for password gen
 
-**Reference:** OpenCode's `lib.rs` spawn_sidecar function
+**Reference Implementations:**
+- OpenCode's `spawn_sidecar` function in Tauri 2
+- Review sidecar spawning patterns from v1 if applicable
 
-### 3.2 Global Shortcuts (Priority #2)
-- [ ] Register shortcuts:
-  - `Ctrl+Alt+A` (all platforms)
-  - `Alt+Shift+A` (alternative)
-- [ ] Show/hide window on shortcut
-- [ ] Focus text input when showing
-- [ ] Handle already-visible case
+### 3.2 Global Shortcuts
+
+**Implementation:**
+- [ ] Register global keyboard shortcuts:
+  - **Primary:** `Ctrl+Alt+A` (Windows/Linux) / `Cmd+Option+A` (macOS)
+  - **Alternative:** `Alt+Shift+A` (all platforms)
+- [ ] Show/hide window on shortcut press
+- [ ] Focus text input field when window appears
+- [ ] Handle edge cases:
+  - Window already visible → hide it
+  - Window minimized → restore and focus
+  - Multiple rapid presses → debounce
+- [ ] Configurable shortcuts (settings page)
 
 **Files:**
-- `packages/desktop/src-tauri/src/shortcuts.rs` (new)
-- `packages/desktop/src-tauri/src/lib.rs` (integrate)
+- `packages/desktop/src-tauri/src/shortcuts.rs` - Shortcut registration and handling
+- `packages/desktop/src-tauri/src/lib.rs` - Integrate shortcuts on app startup
+- `packages/desktop/src-tauri/Cargo.toml` - Add `tauri-plugin-global-shortcut`
+
+**Platform Considerations:**
+- macOS: Request accessibility permissions
+- Windows: Admin rights not required
+- Linux: X11 vs Wayland handling
 
 ### 3.3 System Tray
-- [ ] Tray icon (already configured)
-- [ ] Menu items:
-  - Show/Hide
-  - Settings
-  - Quit
-- [ ] Click tray to toggle window
-- [ ] Update menu based on window state
+
+**Implementation:**
+- [ ] Tray icon with app branding (already configured in v1 pattern)
+- [ ] Context menu items:
+  - **Show/Hide** - Toggle window visibility
+  - **Settings** - Open settings page
+  - **Separator**
+  - **Quit** - Exit application
+- [ ] Left-click tray icon to toggle window
+- [ ] Update menu state based on window visibility
+- [ ] Tray notification on first run (optional)
 
 **Files:**
-- `packages/desktop/src-tauri/src/tray.rs` (new)
+- `packages/desktop/src-tauri/src/tray.rs` - Tray setup and menu handlers
+- `packages/desktop/src-tauri/src/lib.rs` - Initialize tray on startup
+- `packages/desktop/src-tauri/icons/` - Tray icon assets
+
+**Platform Considerations:**
+- macOS: Use monochrome icon for tray (Template image)
+- Windows: Use 16x16 and 32x32 icons
+- Linux: Use SVG or PNG with transparency
 
 ### 3.4 Window Management
-- [ ] Save/restore window position and size
-- [ ] Hide to tray on close (don't quit)
-- [ ] Quit only from tray menu
-- [ ] Platform-specific behaviors
+
+**Implementation:**
+- [ ] Save/restore window position and size (use `tauri-plugin-window-state`)
+- [ ] Hide to tray on close button (prevent app quit)
+- [ ] Quit only from tray menu or Cmd+Q/Alt+F4
+- [ ] Platform-specific behaviors:
+  - **macOS:** Hide on close, quit from menu only
+  - **Windows:** Minimize to tray on close
+  - **Linux:** Similar to Windows, respect DE conventions
+- [ ] Remember window state per monitor (multi-monitor support)
+- [ ] Default window size: 800x600, centered on screen
 
 **Files:**
-- Use `tauri-plugin-window-state` (already installed in OpenCode pattern)
+- `packages/desktop/src-tauri/Cargo.toml` - Add `tauri-plugin-window-state`
+- `packages/desktop/src-tauri/src/lib.rs` - Configure window behavior
+- `packages/desktop/src-tauri/tauri.conf.json` - Window configuration
+
+**State Storage:**
+- Window state saved to OS-specific location
+- Separate from app config (use Tauri's state plugin)
+
+---
 
 ---
 
 ## Phase 4: Voice Support
 
-### 4.1 Audio Recorder (Web)
-- [ ] Port AudioWorklet pattern from v1
-- [ ] Record button in chat UI
-- [ ] Visual feedback (recording animation)
-- [ ] Stop recording on button release
-- [ ] Send WAV to backend
+**Priority:** Medium  
+**Estimated Time:** 3-4 hours  
+**Status:** Not started  
+**Depends On:** Phase 3 (Desktop) recommended but not required
 
-**Files to port:**
+### 4.1 Audio Recorder (Web)
+
+**Implementation:**
+- [ ] Port AudioWorklet pattern from v1 (proven working implementation)
+- [ ] Microphone button in chat interface
+- [ ] Visual feedback during recording:
+  - Pulsing red indicator
+  - Waveform visualization (optional)
+  - Recording duration timer
+- [ ] Push-to-talk: Hold Space bar to record, release to send
+- [ ] Click-to-toggle: Click mic button to start/stop
+- [ ] WAV encoding (16-bit PCM, 16kHz sample rate for HA compatibility)
+- [ ] Browser permission handling with clear UI prompts
+- [ ] Audio level indicator (prevent silent recordings)
+
+**Files to Port:**
 - `v1/src/lib/audioRecorder.ts` → `packages/web/src/lib/audio-recorder.ts`
 - `v1/src/lib/audioWorklet.ts` → `packages/web/src/lib/audio-worklet.ts`
 
+**Files to Modify:**
+- `packages/web/src/components/assist-chat.ts` - Add mic button and recording UI
+- `packages/web/src/components/app-root.ts` - Handle keyboard shortcuts
+
+**Browser Compatibility:**
+- Chrome/Edge: Full support
+- Firefox: Full support
+- Safari: Requires user gesture for microphone access
+
 ### 4.2 Audio Pipeline (Backend)
-- [ ] Implement `/api/pipeline/run-audio` endpoint
-- [ ] Accept WAV/PCM audio
-- [ ] Send to HA STT pipeline
-- [ ] Return transcription + intent results
+
+**Implementation:**
+- [ ] Complete `/api/pipelines/run-audio` endpoint (currently stubbed)
+- [ ] Accept multipart/form-data with audio file
+- [ ] Validate audio format (WAV, 16-bit PCM)
+- [ ] Send to HA STT pipeline via WebSocket
+- [ ] Handle STT events:
+  - `stt-start` - STT processing started
+  - `stt-end` - Transcription complete
+  - `intent-start` - Intent processing started
+  - `intent-end` - Response ready
+- [ ] Return structured response:
+  ```json
+  {
+    "transcription": "turn on the lights",
+    "response": "I've turned on the lights",
+    "conversationId": "uuid"
+  }
+  ```
+- [ ] Error handling for unsupported formats, timeouts, STT failures
+
+**Files:**
+- `packages/backend/src/routes/pipelines.ts` - Implement audio endpoint
+- `packages/backend/src/ha/client.ts` - Add audio pipeline support if needed
+
+**HA Requirements:**
+- Whisper or other STT integration in Home Assistant
+- Pipeline configured with STT step
 
 ### 4.3 Voice UI
-- [ ] Microphone button in chat
-- [ ] Show recording state
-- [ ] Display transcription
-- [ ] Keyboard shortcut to start recording (Space to talk)
+
+**Implementation:**
+- [ ] Microphone button in chat header
+- [ ] Recording states:
+  - **Idle:** Gray mic icon
+  - **Recording:** Red pulsing icon + "Recording..." text
+  - **Processing:** Spinner + "Processing audio..."
+  - **Transcribing:** "Transcribing..." with transcription preview
+- [ ] Display transcription before sending (allow editing)
+- [ ] Send transcribed text + original audio (future: audio-only mode)
+- [ ] Keyboard shortcuts:
+  - **Space (hold):** Push-to-talk
+  - **Escape:** Cancel recording
+- [ ] Settings page: Toggle auto-send (send immediately vs show transcription)
+
+**Files:**
+- `packages/web/src/components/assist-chat.ts` - Voice UI components
+- `packages/web/src/components/settings-page.ts` - Voice settings
+
+**UX Considerations:**
+- Clear visual feedback for each stage
+- Allow canceling mid-recording
+- Handle microphone permission denial gracefully
+- Show error if STT not configured in HA
 
 ---
 
-## Phase 5: Future Enhancements
+## Phase 5: Advanced Features & Polish
 
-Deferred until core features are complete:
+**Priority:** Low  
+**Estimated Time:** Variable (1-2 hours each)  
+**Status:** Not started  
+**When:** After Phases 3-4 complete and users request features
 
-- [ ] Streaming LLM responses (handle `intent-progress` events)
-- [ ] Markdown rendering for responses
-- [ ] Continue conversation feature
-- [ ] TTS audio playback
-- [ ] Conversation history persistence
-- [ ] Multiple conversations
-- [ ] Autostart on system boot
-- [ ] Auto-updater (tauri-plugin-updater)
-- [ ] Packaging:
-  - [ ] AppImage
-  - [ ] Windows MSI/NSIS
-  - [ ] macOS DMG
-  - [ ] Flatpak
-  - [ ] Snap
+### 5.1 Streaming LLM Responses
+- [ ] Handle `intent-progress` events from HA
+- [ ] Stream response tokens to UI in real-time
+- [ ] Typewriter effect for responses
+- [ ] Cancel mid-stream with stop button
 
----
+**Benefit:** Faster perceived response time, better UX for long responses
 
-## Current Status
+### 5.2 Markdown Rendering
+- [ ] Install markdown parser (e.g., `marked` or `markdown-it`)
+- [ ] Render formatted text, links, lists, code blocks
+- [ ] Syntax highlighting for code (e.g., `highlight.js`)
+- [ ] Sanitize HTML to prevent XSS
 
-**Completed:**
-- ✅ Monorepo structure
-- ✅ All packages build successfully
-- ✅ Desktop app runs without Wayland errors
-- ✅ Icons added
-- ✅ Basic HA WebSocket client ported
-- ✅ Type definitions complete
+**Benefit:** Rich responses with formatting, better for complex queries
 
-**Next Step:**
-Start Phase 1.1 - Implement crypto utilities and config encryption
+### 5.3 Continue Conversation
+- [ ] "Continue" button on last assistant message
+- [ ] Pre-fill input with context (e.g., "tell me more")
+- [ ] Branch conversations (keep history, create new thread)
+
+**Benefit:** Better multi-turn conversations, easier follow-ups
+
+### 5.4 TTS Audio Playback
+- [ ] Request audio from HA TTS pipeline
+- [ ] Play audio in browser using Web Audio API
+- [ ] Visual feedback during playback
+- [ ] Stop/pause controls
+- [ ] Settings toggle for auto-play
+
+**Benefit:** Hands-free experience, accessibility
+
+### 5.5 Conversation History Persistence
+- [ ] Store conversations in SQLite (desktop) or IndexedDB (web)
+- [ ] List previous conversations with timestamps
+- [ ] Search conversation history
+- [ ] Export conversations (JSON, markdown)
+
+**Benefit:** Reference past conversations, long-term memory
+
+### 5.6 Multiple Conversations
+- [ ] Tab interface for multiple chat threads
+- [ ] Create new conversation
+- [ ] Switch between conversations
+- [ ] Delete conversations
+
+**Benefit:** Organize conversations by topic or context
+
+### 5.7 Autostart on System Boot
+- [ ] Register desktop app to start on login (Tauri built-in)
+- [ ] Start minimized to tray
+- [ ] Settings toggle for autostart
+
+**Benefit:** Always available, no manual startup
+
+### 5.8 Auto-Updater
+- [ ] Integrate `tauri-plugin-updater`
+- [ ] Check for updates on startup
+- [ ] Download and install updates
+- [ ] Notify user of new versions
+
+**Benefit:** Keep users on latest version automatically
+
+### 5.9 Dark Mode
+- [ ] Add theme toggle to settings
+- [ ] CSS variables for theming
+- [ ] Persist preference in localStorage
+- [ ] Respect OS theme preference
+
+**Benefit:** Reduced eye strain, user preference
+
+### 5.10 Accessibility Improvements
+- [ ] ARIA labels for all interactive elements
+- [ ] Screen reader support
+- [ ] Keyboard navigation for all features
+- [ ] High contrast mode
+- [ ] Focus indicators
+
+**Benefit:** Accessible to users with disabilities
+
+### 5.11 Packaging & Distribution
+- [ ] **Linux:**
+  - [ ] AppImage (portable)
+  - [ ] Flatpak (Flathub distribution)
+  - [ ] Snap (Ubuntu Software)
+  - [ ] .deb / .rpm packages
+- [ ] **Windows:**
+  - [ ] MSI installer
+  - [ ] NSIS installer
+  - [ ] Portable ZIP
+- [ ] **macOS:**
+  - [ ] DMG installer
+  - [ ] Code signing (Apple Developer cert)
+  - [ ] Notarization (Gatekeeper)
+
+**Benefit:** Easy installation for end users
 
 ---
 
@@ -312,28 +359,135 @@ Start Phase 1.1 - Implement crypto utilities and config encryption
 cd v2
 
 # Development
-bun run backend          # Start backend only
-bun run web              # Start web UI with Vite HMR
-bun run desktop          # Start desktop app (Tauri dev)
+bun run backend          # Start backend API on port 3000
+bun run web             # Start web UI with Vite HMR on port 5173
+bun run desktop         # Desktop app (Phase 3 - not yet implemented)
 
 # Building
-bun run build            # Build all packages
-bun run build:types      # Build shared-types
-bun run build:backend    # Build backend
-bun run build:web        # Build web UI
-bun run build:desktop    # Build desktop (+ create installers)
+bun run build           # Build all packages
+bun run build:types     # Build shared types only
+bun run build:backend   # Build backend only
+bun run build:web       # Build web UI only
+bun run build:desktop   # Build desktop app (Phase 3)
 
-# Testing (Phase 1)
-cd packages/backend && ./test-backend.sh
+# Type Checking
+bun run typecheck       # Type check all packages
+
+# Testing
+./test-phase2.sh        # Automated backend API testing
+# See STATUS.md for manual web UI testing guide
+```
+
+### Backend CLI
+```bash
+cd packages/backend
+
+# Start server
+bun run src/index.ts backend [--port 3000]
+
+# Start server + serve web UI  
+bun run src/index.ts web [--port 3000]
+
+# Dev mode with HMR support
+bun run src/index.ts dev [--port 3000]
+
+# Reset password and config
+bun run src/index.ts backend --reset-password
 ```
 
 ---
 
-## Notes
+## Implementation Notes
 
-- Backend uses port auto-assignment (finds available port)
-- Config stored in `~/.ha-assist/config.json`
-- Desktop sidecar passes password via environment variable
-- Web UI connects to backend, backend proxies to HA
-- No streaming responses in initial release (Phase 5)
-- Voice support deferred to Phase 4
+### Current Architecture
+- **Backend:** Hono API server on Node/Bun
+- **Web UI:** Lit web components with Vite
+- **Desktop:** Tauri 2 (Phase 3)
+- **Storage:** Platform-specific config directories
+- **Auth:** Password + Bearer tokens
+- **Encryption:** AES-256-GCM for config, bcrypt for passwords
+
+### Key Technical Decisions
+1. **No WebSocket Proxy (Yet)**
+   - Backend connects directly to HA WebSocket
+   - Web UI uses REST API for pipeline execution
+   - Sufficient for current text-based chat
+   - Could add WS proxy in future if needed for real-time features
+
+2. **localStorage for Chat History**
+   - Simple, works in both web and desktop
+   - No backend persistence required
+   - Easy to clear/export
+   - Could migrate to IndexedDB or SQLite in Phase 5
+
+3. **Single Pipeline (Phase 2)**
+   - Uses first available or preferred pipeline
+   - Phase 2.5 adds UI for selection
+   - Sufficient for most users with one pipeline
+
+4. **No Streaming (Phase 2)**
+   - Complete responses only
+   - Simpler implementation
+   - Phase 5 adds streaming if users request it
+
+5. **Text-Only (Phase 2)**
+   - Voice deferred to Phase 4
+   - Proven working code from v1 ready to port
+   - Waiting for core features first
+
+### Platform-Specific Considerations
+- **Linux:** XDG directories, X11/Wayland support
+- **macOS:** Application Support, code signing required
+- **Windows:** AppData, MSI installer recommended
+
+### Security Model
+- Password never leaves config file (stored as bcrypt hash)
+- Session tokens in memory only (not persisted)
+- Config encrypted at rest with AES-256-GCM
+- Access tokens never logged or exposed in UI
+- CORS enabled for web dev, disabled in production
+
+---
+
+## Quick Reference
+
+**Current Phase:** Phase 2 Complete ✅  
+**Next Phase:** Phase 3 (Desktop) or Phase 2.5 (Pipeline Selection)  
+**Status Details:** See STATUS.md  
+**History:** See HISTORY.md  
+**Testing:** See STATUS.md testing guide
+
+**Quick Start:**
+```bash
+./test-phase2.sh                                    # Start backend
+cd packages/web && bun run dev                      # Start web UI
+open http://localhost:5173/?password=<PASSWORD>     # Use password from step 1
+```
+
+---
+
+## Future Considerations
+
+### Performance Optimization
+- Bundle size reduction (tree shaking, code splitting)
+- Backend response caching
+- Lazy loading for advanced features
+- Service worker for offline support (web)
+
+### Advanced Features (Post Phase 5)
+- Multi-user support (requires auth rework)
+- Cloud sync for conversations
+- Plugin system for extensions
+- Custom pipeline creation UI
+- Advanced voice commands (wake word detection)
+- Integration with other smart home platforms
+
+### Community Contributions
+- Translation/i18n support
+- Theme marketplace
+- Plugin marketplace
+- Documentation contributions
+
+---
+
+**Last Updated:** January 15, 2026

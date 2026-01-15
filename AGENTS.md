@@ -223,7 +223,7 @@ const [users, settings] = await Promise.all([
 ### Current Status
 - **No automated unit tests** (Vitest/Jest not configured)
 - Use `./test-phase2.sh` for automated backend API testing
-- Manual UI testing via `TESTING-GUIDE.md` and `QUICK-TEST.md`
+- Manual UI testing via `STATUS.md` testing guide
 
 ### When Adding Tests (Future)
 - Place test files next to source: `component.test.ts`
@@ -233,6 +233,19 @@ const [users, settings] = await Promise.all([
 
 ## Development Workflow
 
+### Using the Documentation
+
+**When starting a new implementation:**
+1. Read `STATUS.md` to understand the current state
+2. Read `PLAN.md` to see the detailed requirements for the next phase
+3. Optionally check `HISTORY.md` for context on past decisions
+
+**File purposes:**
+- **STATUS.md** - Current state, what's working, testing guide, troubleshooting
+- **HISTORY.md** - Detailed completion reports for Phase 1 & 2, technical decisions
+- **PLAN.md** - Future phases (2.5, 3, 4, 5) with detailed implementation notes
+- **API.md** - Backend API reference (packages/backend/API.md)
+
 ### Phase 2 Complete ✅
 - Backend API with auth & encryption
 - Settings management UI
@@ -241,6 +254,31 @@ const [users, settings] = await Promise.all([
 
 ### Phase 3 (Next): Desktop Integration
 When working on Phase 3, refer to `PLAN.md` for detailed requirements.
+
+### 🗑️ Cleanup After Implementation
+
+**IMPORTANT:** Once Phase 3 (or any phase) is complete:
+
+1. **Delete temporary status files:**
+   ```bash
+   rm v2/STATUS.md v2/HISTORY.md
+   ```
+   These are temporary documentation files that should be removed after Phase 3+ completion.
+
+2. **Update PLAN.md:**
+   - Move completed phase details to a brief summary
+   - Keep only future phases detailed
+
+3. **Remove this section from AGENTS.md:**
+   - Delete the "Using the Documentation" and "Cleanup After Implementation" sections
+   - Update "Documentation" section to remove STATUS.md and HISTORY.md references
+
+4. **Code review should flag:**
+   - If STATUS.md or HISTORY.md still exist after phase completion
+   - If AGENTS.md still references these temporary files
+   - Missing updates to PLAN.md
+
+**Why delete?** These files are verbose working documents useful during active development but become outdated and confusing once the project moves forward. The essential information should be captured in README.md, API.md, and a streamlined PLAN.md.
 
 ## Common Patterns
 
@@ -264,10 +302,12 @@ Refer to `packages/backend/src/ha/client.ts` for connection patterns.
 
 ## Documentation
 
-- **API.md**: Complete backend API documentation
-- **TESTING-GUIDE.md**: Comprehensive test scenarios
-- **QUICK-TEST.md**: 3-step quick start guide
-- **PLAN.md**: Development roadmap and phases
+- **STATUS.md**: Current state, testing guide, troubleshooting (v2/ - **temporary**)
+- **HISTORY.md**: Phase 1 & 2 completion details (v2/ - **temporary**)
+- **PLAN.md**: Development roadmap and phases (v2/)
+- **API.md**: Complete backend API documentation (v2/packages/backend/)
+
+**Note:** STATUS.md and HISTORY.md are temporary working documents that should be deleted after Phase 3+ completion (see "Cleanup After Implementation" section above).
 
 Always update relevant docs when changing APIs or adding features.
 
@@ -284,5 +324,6 @@ v2/
 
 ---
 
-**Version**: 1.0  
-**Last Updated**: 2026-01-15
+**Version**: 1.1  
+**Last Updated**: 2026-01-15  
+**Changes**: Updated documentation references for consolidated STATUS/HISTORY/PLAN structure
