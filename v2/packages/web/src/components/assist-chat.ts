@@ -81,7 +81,7 @@ export class AssistChat extends LitElement {
       flex-direction: column;
       gap: var(--ha-space-3);
       padding: var(--ha-space-4) var(--ha-space-4) var(--ha-space-2);
-      margin: var(--ha-space-2);
+      margin: var(--ha-space-2) var(--ha-space-1);
       background-color: var(--ha-color-surface);
       border-radius: var(--ha-border-radius-lg);
       box-shadow: var(--ha-shadow-lg);
