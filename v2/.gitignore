@@ -1,0 +1,23 @@
+node_modules/
+dist/
+.DS_Store
+*.log
+.env
+.env.local
+
+# Tauri
+**/target/
+**/Cargo.lock
+
+# Build outputs
+packages/*/dist/
+packages/*/build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Bun
+bun.lockb

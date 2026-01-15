@@ -1,0 +1,23 @@
+{
+  "name": "@ha-assist/backend",
+  "version": "2.0.0",
+  "type": "module",
+  "bin": {
+    "ha-assist": "./dist/cli.js"
+  },
+  "scripts": {
+    "dev": "bun run src/index.ts",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.19.9",
+    "home-assistant-js-websocket": "^9.5.0",
+    "hono": "^4.6.14",
+    "yargs": "^17.7.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "@types/yargs": "^17.0.33",
+    "typescript": "^5.7.3"
+  }
+}

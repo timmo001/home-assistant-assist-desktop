@@ -1,0 +1,25 @@
+{
+  "name": "home-assistant-assist-v2",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "bun@1.3.6",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "backend": "bun --cwd packages/backend dev",
+    "web": "bun --cwd packages/web dev",
+    "desktop": "bun --cwd packages/desktop tauri dev",
+    "build": "bun run build:types && bun run build:backend && bun run build:web && bun run build:desktop",
+    "build:types": "bun --cwd packages/shared-types build",
+    "build:backend": "bun --cwd packages/backend build",
+    "build:web": "bun --cwd packages/web build",
+    "build:desktop": "bun --cwd packages/desktop tauri build",
+    "typecheck": "bun run --filter='./packages/*' typecheck"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.6",
+    "typescript": "^5.8.2"
+  }
+}
