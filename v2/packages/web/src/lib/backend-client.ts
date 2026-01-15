@@ -5,21 +5,30 @@ import { storage } from './storage';
  * Detect password from various sources
  */
 function detectPassword(): string | null {
+  let password: string | null = null;
+
   // Try window injection (desktop wrapper)
   if (typeof window !== 'undefined' && (window as any).__HA_ASSIST__?.password) {
-    return (window as any).__HA_ASSIST__.password;
+    password = (window as any).__HA_ASSIST__.password;
   }
 
   // Try URL query parameter
-  if (typeof window !== 'undefined') {
+  if (!password && typeof window !== 'undefined') {
     const params = new URLSearchParams(window.location.search);
-    const password = params.get('password');
-    if (password) {
-      return password;
-    }
+    password = params.get('password');
   }
 
-  return null;
+  // Fallback to session storage
+  if (!password) {
+    password = storage.getPassword();
+  }
+
+  // Store in session storage for future use if detected
+  if (password) {
+    storage.setPassword(password);
+  }
+
+  return password;
 }
 
 /**
@@ -204,6 +213,7 @@ export class BackendClient {
       });
     } finally {
       this.clearToken();
+      storage.clearPassword();
     }
   }
 

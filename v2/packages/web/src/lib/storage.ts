@@ -105,10 +105,45 @@ export class Storage {
   }
 
   /**
-   * Clear all ha-assist data from localStorage
+   * Get password from sessionStorage
+   */
+  getPassword(): string | null {
+    try {
+      return sessionStorage.getItem(this.prefix + 'password');
+    } catch (error) {
+      console.error('Failed to get password from sessionStorage:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Set password in sessionStorage
+   */
+  setPassword(password: string): void {
+    try {
+      sessionStorage.setItem(this.prefix + 'password', password);
+    } catch (error) {
+      console.error('Failed to set password in sessionStorage:', error);
+    }
+  }
+
+  /**
+   * Remove password from sessionStorage
+   */
+  clearPassword(): void {
+    try {
+      sessionStorage.removeItem(this.prefix + 'password');
+    } catch (error) {
+      console.error('Failed to remove password from sessionStorage:', error);
+    }
+  }
+
+  /**
+   * Clear all ha-assist data from localStorage and sessionStorage
    */
   clearAll(): void {
     try {
+      // Clear localStorage
       const keysToRemove: string[] = [];
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
@@ -117,6 +152,16 @@ export class Storage {
         }
       }
       keysToRemove.forEach((key) => localStorage.removeItem(key));
+
+      // Clear sessionStorage
+      const sessionKeysToRemove: string[] = [];
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i);
+        if (key && key.startsWith(this.prefix)) {
+          sessionKeysToRemove.push(key);
+        }
+      }
+      sessionKeysToRemove.forEach((key) => sessionStorage.removeItem(key));
     } catch (error) {
       console.error('Failed to clear all data:', error);
     }
