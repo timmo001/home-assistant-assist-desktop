@@ -11,7 +11,7 @@
     "tauri": "tauri"
   },
   "dependencies": {
-    "@tauri-apps/api": "1.5.6",
+    "@tauri-apps/api": "2.9.0",
     "home-assistant-js-websocket": "9.4.0",
     "svelte-routing": "2.13.0",
     "tauri-plugin-autostart-api": "https://github.com/tauri-apps/tauri-plugin-autostart#v1",
